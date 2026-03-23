@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { MediaFrame } from "@/components/site/media-frame";
@@ -11,6 +12,17 @@ type GalleryExperienceProps = {
   archiveAssets: StudioAsset[];
   journeyPreviewAssets: Record<string, StudioAsset>;
 };
+
+const galleryFilterLabels: Record<string, string> = {
+  all: "All Work",
+  epoxy: "Epoxy Floors",
+  carpentry: "Carpentry",
+  interiors: "Interiors",
+  workshop: "Workshop",
+  detail: "Close-Ups",
+};
+
+const galleryFilterOrder = ["all", "epoxy", "carpentry", "interiors", "workshop", "detail"];
 
 export function GalleryExperience({
   journeys,
@@ -24,7 +36,12 @@ export function GalleryExperience({
   const [activeStep, setActiveStep] = useState(0);
 
   const filters = useMemo(
-    () => ["all", ...new Set(archiveAssets.map((asset) => asset.category.toLowerCase()))],
+    () =>
+      galleryFilterOrder.filter(
+        (filter) =>
+          filter === "all" ||
+          archiveAssets.some((asset) => asset.category.toLowerCase() === filter),
+      ),
     [archiveAssets],
   );
 
@@ -84,6 +101,9 @@ export function GalleryExperience({
   return (
     <>
       <section className="gallery-header shell">
+        <Link className="gallery-header__back" href="/">
+          ← Back to Home
+        </Link>
         <span className="section-label">Interactive Gallery</span>
         <h1 className="gallery-header__title">
           Step inside the <em>making.</em>
@@ -144,7 +164,7 @@ export function GalleryExperience({
                 onClick={() => setSelectedFilter(filter)}
                 type="button"
               >
-                {filter === "all" ? "All Work" : filter}
+                {galleryFilterLabels[filter] ?? filter}
               </button>
             ))}
           </div>
@@ -160,7 +180,7 @@ export function GalleryExperience({
                 <MediaFrame asset={asset} autoPlay={asset.kind === "video"} className="masonry-card__art" loop={asset.kind === "video"} muted />
                 <div className="masonry-card__overlay">
                   <span>
-                    {asset.category}
+                    {galleryFilterLabels[asset.category] ?? asset.category}
                     {asset.kind === "video" ? " · video" : ""}
                   </span>
                   <strong>{asset.title}</strong>
@@ -198,7 +218,7 @@ export function GalleryExperience({
             />
             <div className="gallery-modal__content">
               <span>
-                {lightboxAsset.category}
+                {galleryFilterLabels[lightboxAsset.category] ?? lightboxAsset.category}
                 {lightboxAsset.kind === "video" ? " · motion capture" : " · still archive"}
               </span>
               <h3>{lightboxAsset.title}</h3>

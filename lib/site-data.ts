@@ -2,12 +2,35 @@ import { fallbackBlogPosts, fallbackJourneys, fallbackProjects, fallbackServices
 import { attachBlogPostMedia, attachProjectMedia, attachServiceMedia, getFeaturedMedia } from "@/lib/media-library";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { BlogPost, JourneyTheme, Project, Service, SiteSettings, Testimonial } from "@/lib/types";
+import type { BlogPost, JourneyTheme, Project, Service, SiteSettings, Testimonial, TitledItem } from "@/lib/types";
 
 function asStringArray(value: unknown) {
   return Array.isArray(value)
     ? value.map((item) => String(item)).filter(Boolean)
     : [];
+}
+
+function asTitledItems(value: unknown, fallbackItems: TitledItem[]) {
+  if (!Array.isArray(value)) {
+    return fallbackItems;
+  }
+
+  const items = value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const record = item as Record<string, unknown>;
+
+      return {
+        title: String(record.title ?? "").trim(),
+        description: String(record.description ?? "").trim(),
+      };
+    })
+    .filter((item): item is TitledItem => Boolean(item?.title && item.description));
+
+  return items.length ? items : fallbackItems;
 }
 
 function sortByOrder<T extends { sortOrder: number }>(items: T[]) {
@@ -79,6 +102,13 @@ function mapSiteSettings(row: Record<string, unknown>): SiteSettings {
     heroDescription: String(
       row.hero_description ?? fallbackSiteSettings.heroDescription,
     ),
+    heroQuote: String(row.hero_quote ?? fallbackSiteSettings.heroQuote),
+    heroLocationText: String(
+      row.hero_location_text ?? fallbackSiteSettings.heroLocationText,
+    ),
+    heroMediaUrl: String(
+      row.hero_media_url ?? fallbackSiteSettings.heroMediaUrl,
+    ),
     primaryCtaLabel: String(
       row.primary_cta_label ?? fallbackSiteSettings.primaryCtaLabel,
     ),
@@ -99,6 +129,91 @@ function mapSiteSettings(row: Record<string, unknown>): SiteSettings {
     ),
     clientRating: String(
       row.client_rating ?? fallbackSiteSettings.clientRating,
+    ),
+    servicesSectionTitle: String(
+      row.services_section_title ?? fallbackSiteSettings.servicesSectionTitle,
+    ),
+    servicesSectionSubtitle: String(
+      row.services_section_subtitle ?? fallbackSiteSettings.servicesSectionSubtitle,
+    ),
+    servicesSectionCtaLabel: String(
+      row.services_section_cta_label ?? fallbackSiteSettings.servicesSectionCtaLabel,
+    ),
+    servicesSectionCtaHref: String(
+      row.services_section_cta_href ?? fallbackSiteSettings.servicesSectionCtaHref,
+    ),
+    portfolioSectionTitle: String(
+      row.portfolio_section_title ?? fallbackSiteSettings.portfolioSectionTitle,
+    ),
+    portfolioSectionSubtitle: String(
+      row.portfolio_section_subtitle ?? fallbackSiteSettings.portfolioSectionSubtitle,
+    ),
+    portfolioSectionCtaLabel: String(
+      row.portfolio_section_cta_label ?? fallbackSiteSettings.portfolioSectionCtaLabel,
+    ),
+    portfolioSectionCtaHref: String(
+      row.portfolio_section_cta_href ?? fallbackSiteSettings.portfolioSectionCtaHref,
+    ),
+    aboutSectionTitle: String(
+      row.about_section_title ?? fallbackSiteSettings.aboutSectionTitle,
+    ),
+    aboutMediaUrl: String(
+      row.about_media_url ?? fallbackSiteSettings.aboutMediaUrl,
+    ),
+    aboutValues: asTitledItems(
+      row.about_values,
+      fallbackSiteSettings.aboutValues,
+    ),
+    studioFilmTitle: String(
+      row.studio_film_title ?? fallbackSiteSettings.studioFilmTitle,
+    ),
+    studioFilmDescription: String(
+      row.studio_film_description ?? fallbackSiteSettings.studioFilmDescription,
+    ),
+    storyMediaUrl: String(
+      row.story_media_url ?? fallbackSiteSettings.storyMediaUrl,
+    ),
+    processSectionTitle: String(
+      row.process_section_title ?? fallbackSiteSettings.processSectionTitle,
+    ),
+    processSectionSubtitle: String(
+      row.process_section_subtitle ?? fallbackSiteSettings.processSectionSubtitle,
+    ),
+    processSteps: asTitledItems(
+      row.process_steps,
+      fallbackSiteSettings.processSteps,
+    ),
+    testimonialsSectionTitle: String(
+      row.testimonials_section_title ?? fallbackSiteSettings.testimonialsSectionTitle,
+    ),
+    testimonialsSectionSubtitle: String(
+      row.testimonials_section_subtitle ?? fallbackSiteSettings.testimonialsSectionSubtitle,
+    ),
+    testimonialsRatingLabel: String(
+      row.testimonials_rating_label ?? fallbackSiteSettings.testimonialsRatingLabel,
+    ),
+    testimonialsPrimaryCtaLabel: String(
+      row.testimonials_primary_cta_label ??
+        fallbackSiteSettings.testimonialsPrimaryCtaLabel,
+    ),
+    testimonialsPrimaryCtaHref: String(
+      row.testimonials_primary_cta_href ??
+        fallbackSiteSettings.testimonialsPrimaryCtaHref,
+    ),
+    blogSectionTitle: String(
+      row.blog_section_title ?? fallbackSiteSettings.blogSectionTitle,
+    ),
+    blogSectionSubtitle: String(
+      row.blog_section_subtitle ?? fallbackSiteSettings.blogSectionSubtitle,
+    ),
+    blogSectionCtaLabel: String(
+      row.blog_section_cta_label ?? fallbackSiteSettings.blogSectionCtaLabel,
+    ),
+    blogSectionCtaHref: String(
+      row.blog_section_cta_href ?? fallbackSiteSettings.blogSectionCtaHref,
+    ),
+    contactSectionTitle: String(
+      row.contact_section_title ?? fallbackSiteSettings.contactSectionTitle,
     ),
     marqueeItems: asStringArray(
       row.marquee_items ?? fallbackSiteSettings.marqueeItems,
@@ -376,14 +491,14 @@ export async function getAdminContext() {
 }
 
 export async function getHomePageBundle() {
-  const [siteSettings, services, featuredProjects, testimonials, blogPosts, featuredMedia] =
+  const siteSettings = await getSiteSettings();
+  const [services, featuredProjects, testimonials, blogPosts, featuredMedia] =
     await Promise.all([
-      getSiteSettings(),
       getServices(),
       getFeaturedProjects(),
       getTestimonials(),
       getBlogPosts(),
-      getFeaturedMedia(),
+      getFeaturedMedia(siteSettings),
     ]);
 
   return {

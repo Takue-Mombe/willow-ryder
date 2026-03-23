@@ -16,6 +16,22 @@ function splitLines(value: FormDataEntryValue | null) {
     .filter(Boolean);
 }
 
+function splitTitledLines(value: FormDataEntryValue | null) {
+  return text(value)
+    .split(/\n+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const [title, ...rest] = item.split("::");
+
+      return {
+        title: title?.trim() ?? "",
+        description: rest.join("::").trim(),
+      };
+    })
+    .filter((item) => item.title && item.description);
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -81,6 +97,9 @@ export async function saveSiteSettingsAction(formData: FormData) {
     hero_title_emphasis: text(formData.get("hero_title_emphasis")),
     hero_title_suffix: text(formData.get("hero_title_suffix")),
     hero_description: text(formData.get("hero_description")),
+    hero_quote: text(formData.get("hero_quote")),
+    hero_location_text: text(formData.get("hero_location_text")),
+    hero_media_url: text(formData.get("hero_media_url")),
     primary_cta_label: text(formData.get("primary_cta_label")),
     primary_cta_href: text(formData.get("primary_cta_href")),
     secondary_cta_label: text(formData.get("secondary_cta_label")),
@@ -88,6 +107,33 @@ export async function saveSiteSettingsAction(formData: FormData) {
     years_crafting: text(formData.get("years_crafting")),
     projects_completed: text(formData.get("projects_completed")),
     client_rating: text(formData.get("client_rating")),
+    services_section_title: text(formData.get("services_section_title")),
+    services_section_subtitle: text(formData.get("services_section_subtitle")),
+    services_section_cta_label: text(formData.get("services_section_cta_label")),
+    services_section_cta_href: text(formData.get("services_section_cta_href")),
+    portfolio_section_title: text(formData.get("portfolio_section_title")),
+    portfolio_section_subtitle: text(formData.get("portfolio_section_subtitle")),
+    portfolio_section_cta_label: text(formData.get("portfolio_section_cta_label")),
+    portfolio_section_cta_href: text(formData.get("portfolio_section_cta_href")),
+    about_section_title: text(formData.get("about_section_title")),
+    about_media_url: text(formData.get("about_media_url")),
+    about_values: splitTitledLines(formData.get("about_values")),
+    studio_film_title: text(formData.get("studio_film_title")),
+    studio_film_description: text(formData.get("studio_film_description")),
+    story_media_url: text(formData.get("story_media_url")),
+    process_section_title: text(formData.get("process_section_title")),
+    process_section_subtitle: text(formData.get("process_section_subtitle")),
+    process_steps: splitTitledLines(formData.get("process_steps")),
+    testimonials_section_title: text(formData.get("testimonials_section_title")),
+    testimonials_section_subtitle: text(formData.get("testimonials_section_subtitle")),
+    testimonials_rating_label: text(formData.get("testimonials_rating_label")),
+    testimonials_primary_cta_label: text(formData.get("testimonials_primary_cta_label")),
+    testimonials_primary_cta_href: text(formData.get("testimonials_primary_cta_href")),
+    blog_section_title: text(formData.get("blog_section_title")),
+    blog_section_subtitle: text(formData.get("blog_section_subtitle")),
+    blog_section_cta_label: text(formData.get("blog_section_cta_label")),
+    blog_section_cta_href: text(formData.get("blog_section_cta_href")),
+    contact_section_title: text(formData.get("contact_section_title")),
     marquee_items: splitLines(formData.get("marquee_items")),
     about_story: text(formData.get("about_story")),
     about_story_secondary: text(formData.get("about_story_secondary")),
@@ -117,6 +163,7 @@ export async function saveServiceAction(formData: FormData) {
     full_description: text(formData.get("full_description")),
     icon: text(formData.get("icon")) || "✦",
     category: text(formData.get("category")),
+    image_url: text(formData.get("image_url")),
     bullets: splitLines(formData.get("bullets")),
     featured: formData.get("featured") === "on",
     sort_order: Number(text(formData.get("sort_order")) || "0"),
@@ -194,6 +241,7 @@ export async function savePostAction(formData: FormData) {
     featured: formData.get("featured") === "on",
     published_at: text(formData.get("published_at")),
     cover_accent: text(formData.get("cover_accent")),
+    cover_image_url: text(formData.get("cover_image_url")),
     seo_title: text(formData.get("seo_title")),
     seo_description: text(formData.get("seo_description")),
   };

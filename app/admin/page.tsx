@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { AdminDashboard } from "@/components/admin/dashboard";
+import { getStudioArchiveAssets } from "@/lib/media-library";
 import { buildMetadata } from "@/lib/seo";
 import {
   getAdminContext,
@@ -67,16 +68,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const params = await searchParams;
   const status = Array.isArray(params.status) ? params.status[0] : params.status;
 
-  const [siteSettings, services, projects, blogPosts, testimonials] = await Promise.all([
+  const [siteSettings, services, projects, blogPosts, testimonials, archiveAssets] = await Promise.all([
     getSiteSettings(),
     getServices(),
     getProjects(),
     getBlogPosts(),
     getTestimonials(),
+    getStudioArchiveAssets(),
   ]);
 
   return (
     <AdminDashboard
+      archiveAssets={archiveAssets}
       blogPosts={blogPosts}
       email={adminContext.email}
       projects={projects}

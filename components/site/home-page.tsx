@@ -13,48 +13,6 @@ type HomePageProps = {
   featuredMedia: FeaturedMedia;
 };
 
-const aboutValues = [
-  {
-    title: "Local Timber",
-    description: "Ethically sourced Zimbabwean hardwoods sit at the core of our work.",
-  },
-  {
-    title: "Precision Build",
-    description: "Every piece is measured, shaped, and finished by skilled artisans.",
-  },
-  {
-    title: "Turnkey Service",
-    description: "Design through delivery, with one team carrying the full responsibility.",
-  },
-  {
-    title: "Lasting Quality",
-    description: "We build to outlast trends, not just satisfy a brief for the month.",
-  },
-];
-
-const processSteps = [
-  {
-    title: "Consult",
-    description:
-      "We sit down together - in person or remotely - to understand your space, budget, goals, and aesthetic direction.",
-  },
-  {
-    title: "Design",
-    description:
-      "Our studio shapes the concept through layouts, material direction, and a visual language you can actually respond to.",
-  },
-  {
-    title: "Craft",
-    description:
-      "Joinery, flooring, cabinetry, and finishing work are executed with detail, timing, and durability in mind.",
-  },
-  {
-    title: "Deliver",
-    description:
-      "We install, refine, and hand over a finished space that feels composed rather than simply completed.",
-  },
-];
-
 export function HomePage({
   siteSettings,
   services,
@@ -128,11 +86,9 @@ export function HomePage({
 
             <div className="hero__wood-text">
               <blockquote className="hero__quote">
-                &ldquo;Every grain of wood tells a story - we make yours worth telling.&rdquo;
+                &ldquo;{siteSettings.heroQuote}&rdquo;
               </blockquote>
-              <p className="hero__location">
-                Victoria Falls, Zimbabwe · Est. {siteSettings.foundedYear}
-              </p>
+              <p className="hero__location">{siteSettings.heroLocationText}</p>
             </div>
           </div>
         </section>
@@ -153,17 +109,13 @@ export function HomePage({
             <div className="section-intro section-intro--split">
               <div>
                 <span className="section-label">What We Do</span>
-                <h2 className="section-title">Craft in every corner.</h2>
+                <h2 className="section-title">{siteSettings.servicesSectionTitle}</h2>
               </div>
 
               <div>
-                <p className="section-subtitle">
-                  From raw timber to refined hospitality spaces, Winmore Creations
-                  brings expertise across every layer of interior craft in Victoria
-                  Falls and beyond.
-                </p>
-                <Link className="button button--secondary" href="/contact">
-                  Discuss Your Project
+                <p className="section-subtitle">{siteSettings.servicesSectionSubtitle}</p>
+                <Link className="button button--secondary" href={siteSettings.servicesSectionCtaHref}>
+                  {siteSettings.servicesSectionCtaLabel}
                 </Link>
               </div>
             </div>
@@ -201,12 +153,8 @@ export function HomePage({
           <div className="shell">
             <div className="section-intro section-intro--centered">
               <span className="section-label">Selected Work</span>
-              <h2 className="section-title">Built with intention.</h2>
-              <p className="section-subtitle section-subtitle--centered">
-                A selection of projects from Victoria Falls, Hwange, and across
-                Zimbabwe - each one a collaboration between craft, atmosphere, and
-                client ambition.
-              </p>
+              <h2 className="section-title">{siteSettings.portfolioSectionTitle}</h2>
+              <p className="section-subtitle section-subtitle--centered">{siteSettings.portfolioSectionSubtitle}</p>
             </div>
 
             <div className="portfolio-grid">
@@ -233,8 +181,8 @@ export function HomePage({
             </div>
 
             <div className="section-action">
-              <Link className="button button--secondary" href="/portfolio">
-                View Full Portfolio
+              <Link className="button button--secondary" href={siteSettings.portfolioSectionCtaHref}>
+                {siteSettings.portfolioSectionCtaLabel}
               </Link>
             </div>
           </div>
@@ -257,15 +205,13 @@ export function HomePage({
             <div className="about-copy">
               <span className="section-label">Our Story</span>
               <div className="section-divider" />
-              <h2 className="section-title">
-                Rooted in <em>Victoria Falls.</em>
-              </h2>
+              <h2 className="section-title">{siteSettings.aboutSectionTitle}</h2>
               <p>{siteSettings.aboutStory}</p>
               <p>{siteSettings.aboutStorySecondary}</p>
               <p>{siteSettings.aboutStoryTertiary}</p>
 
               <div className="about-values">
-                {aboutValues.map((value) => (
+                {siteSettings.aboutValues.map((value) => (
                   <article className="about-value" key={value.title}>
                     <h3>{value.title}</h3>
                     <p>{value.description}</p>
@@ -281,13 +227,8 @@ export function HomePage({
             <div className="shell studio-film__layout">
               <div>
                 <span className="section-label">Studio In Motion</span>
-                <h2 className="section-title">
-                  A closer look at the making behind the <em>finish.</em>
-                </h2>
-                <p className="section-subtitle">
-                  We have now woven your live public-folder media into the experience,
-                  giving the site real atmosphere instead of placeholder abstraction.
-                </p>
+                <h2 className="section-title">{siteSettings.studioFilmTitle}</h2>
+                <p className="section-subtitle">{siteSettings.studioFilmDescription}</p>
               </div>
               <MediaFrame
                 asset={featuredMedia.storyVideo}
@@ -305,13 +246,12 @@ export function HomePage({
           <div className="shell">
             <div className="section-intro section-intro--centered">
               <span className="section-label">How It Works</span>
-              <h2 className="section-title">
-                Simple process. <em>Extraordinary results.</em>
-              </h2>
+              <h2 className="section-title">{siteSettings.processSectionTitle}</h2>
+              <p className="section-subtitle section-subtitle--centered">{siteSettings.processSectionSubtitle}</p>
             </div>
 
             <div className="process-grid">
-              {processSteps.map((step, index) => (
+              {siteSettings.processSteps.map((step, index) => (
                 <article className="process-card" key={step.title}>
                   <div className="process-card__index">{index + 1}</div>
                   <h3>{step.title}</h3>
@@ -325,15 +265,15 @@ export function HomePage({
         <section className="section testimonials-section" id="testimonials">
           <div className="shell testimonials-layout">
             <div className="testimonials-aside">
-              <span className="section-label">Client Reviews</span>
-              <h2 className="section-title">What clients say.</h2>
+              <span className="section-label">{siteSettings.testimonialsSectionSubtitle}</span>
+              <h2 className="section-title">{siteSettings.testimonialsSectionTitle}</h2>
               <div className="testimonials-rating">
                 <div className="testimonials-stars">★★★★★</div>
                 <div className="testimonials-rating__value">4.9</div>
-                <div className="testimonials-rating__meta">from 47 verified reviews</div>
+                <div className="testimonials-rating__meta">{siteSettings.testimonialsRatingLabel}</div>
               </div>
-              <Link className="button button--primary" href="/contact">
-                Start Your Project
+              <Link className="button button--primary" href={siteSettings.testimonialsPrimaryCtaHref}>
+                {siteSettings.testimonialsPrimaryCtaLabel}
               </Link>
             </div>
 
@@ -367,10 +307,11 @@ export function HomePage({
             <div className="section-intro section-intro--split">
               <div>
                 <span className="section-label">Insights & Craft</span>
-                <h2 className="section-title">From the workshop.</h2>
+                <h2 className="section-title">{siteSettings.blogSectionTitle}</h2>
+                <p className="section-subtitle">{siteSettings.blogSectionSubtitle}</p>
               </div>
-              <Link className="button button--secondary" href="/blog">
-                All Articles
+              <Link className="button button--secondary" href={siteSettings.blogSectionCtaHref}>
+                {siteSettings.blogSectionCtaLabel}
               </Link>
             </div>
 
@@ -400,9 +341,7 @@ export function HomePage({
           <div className="shell contact-layout">
             <div className="contact-copy">
               <span className="section-label">Get In Touch</span>
-              <h2 className="section-title">
-                Let&apos;s build <em>something great.</em>
-              </h2>
+              <h2 className="section-title">{siteSettings.contactSectionTitle}</h2>
               <p>{siteSettings.contactIntro}</p>
 
               <div className="contact-details">

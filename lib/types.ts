@@ -1,3 +1,8 @@
+export type TitledItem = {
+  title: string;
+  description: string;
+};
+
 export type SiteSettings = {
   id: string;
   businessName: string;
@@ -17,6 +22,9 @@ export type SiteSettings = {
   heroTitleEmphasis: string;
   heroTitleSuffix: string;
   heroDescription: string;
+  heroQuote: string;
+  heroLocationText: string;
+  heroMediaUrl: string;
   primaryCtaLabel: string;
   primaryCtaHref: string;
   secondaryCtaLabel: string;
@@ -24,6 +32,33 @@ export type SiteSettings = {
   yearsCrafting: string;
   projectsCompleted: string;
   clientRating: string;
+  servicesSectionTitle: string;
+  servicesSectionSubtitle: string;
+  servicesSectionCtaLabel: string;
+  servicesSectionCtaHref: string;
+  portfolioSectionTitle: string;
+  portfolioSectionSubtitle: string;
+  portfolioSectionCtaLabel: string;
+  portfolioSectionCtaHref: string;
+  aboutSectionTitle: string;
+  aboutMediaUrl: string;
+  aboutValues: TitledItem[];
+  studioFilmTitle: string;
+  studioFilmDescription: string;
+  storyMediaUrl: string;
+  processSectionTitle: string;
+  processSectionSubtitle: string;
+  processSteps: TitledItem[];
+  testimonialsSectionTitle: string;
+  testimonialsSectionSubtitle: string;
+  testimonialsRatingLabel: string;
+  testimonialsPrimaryCtaLabel: string;
+  testimonialsPrimaryCtaHref: string;
+  blogSectionTitle: string;
+  blogSectionSubtitle: string;
+  blogSectionCtaLabel: string;
+  blogSectionCtaHref: string;
+  contactSectionTitle: string;
   marqueeItems: string[];
   aboutStory: string;
   aboutStorySecondary: string;

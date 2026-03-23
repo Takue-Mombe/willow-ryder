@@ -21,6 +21,7 @@ export function SiteHeader({ brandName }: SiteHeaderProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isHomeTop = pathname === "/" && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 48);
@@ -32,7 +33,9 @@ export function SiteHeader({ brandName }: SiteHeaderProps) {
   }, []);
 
   return (
-    <header className={`site-header${scrolled ? " site-header--scrolled" : ""}`}>
+    <header
+      className={`site-header${scrolled ? " site-header--scrolled" : ""}${isHomeTop ? " site-header--hero" : ""}`}
+    >
       <div className="shell site-header__inner">
         <Link className="site-header__brand" href="/">
           {brandName.split(" ").slice(0, 1).join(" ")}

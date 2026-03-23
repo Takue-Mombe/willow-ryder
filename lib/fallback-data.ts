@@ -29,6 +29,9 @@ export const fallbackSiteSettings: SiteSettings = {
   heroTitleSuffix: "a space.",
   heroDescription:
     "Bespoke carpentry, luxury epoxy and wooden flooring, and transformative interior design - handcrafted in the heart of Victoria Falls for clients ready to build spaces with character.",
+  heroQuote: "Every grain of wood tells a story - we make yours worth telling.",
+  heroLocationText: "Victoria Falls, Zimbabwe · Est. 2016",
+  heroMediaUrl: "/epoxy.mp4",
   primaryCtaLabel: "View Our Work",
   primaryCtaHref: "/portfolio",
   secondaryCtaLabel: "Free Consultation",
@@ -36,6 +39,76 @@ export const fallbackSiteSettings: SiteSettings = {
   yearsCrafting: "8+",
   projectsCompleted: "200+",
   clientRating: "4.9★",
+  servicesSectionTitle: "Craft in every corner.",
+  servicesSectionSubtitle:
+    "From raw timber to refined hospitality spaces, Winmore Creations brings expertise across every layer of interior craft in Victoria Falls and beyond.",
+  servicesSectionCtaLabel: "Discuss Your Project",
+  servicesSectionCtaHref: "/contact",
+  portfolioSectionTitle: "Built with intention.",
+  portfolioSectionSubtitle:
+    "A selection of projects from Victoria Falls, Hwange, and across Zimbabwe - each one a collaboration between craft, atmosphere, and client ambition.",
+  portfolioSectionCtaLabel: "View Full Portfolio",
+  portfolioSectionCtaHref: "/portfolio",
+  aboutSectionTitle: "Rooted in Victoria Falls.",
+  aboutMediaUrl: "/interior design/IMG_5759.jpg",
+  aboutValues: [
+    {
+      title: "Local Timber",
+      description: "Ethically sourced Zimbabwean hardwoods sit at the core of our work.",
+    },
+    {
+      title: "Precision Build",
+      description: "Every piece is measured, shaped, and finished by skilled artisans.",
+    },
+    {
+      title: "Turnkey Service",
+      description: "Design through delivery, with one team carrying the full responsibility.",
+    },
+    {
+      title: "Lasting Quality",
+      description: "We build to outlast trends, not just satisfy a brief for the month.",
+    },
+  ],
+  studioFilmTitle: "A closer look at the making behind the finish.",
+  studioFilmDescription:
+    "From timber shaping to the final polish, the studio process is part technical discipline, part atmosphere-building. Use the CMS to swap this motion feature whenever you want a different lead visual.",
+  storyMediaUrl: "/videos/IMG_6785.mp4",
+  processSectionTitle: "Simple process. Extraordinary results.",
+  processSectionSubtitle:
+    "Every commission moves from brief to build through a clear studio process that keeps quality, schedule, and design integrity aligned.",
+  processSteps: [
+    {
+      title: "Consult",
+      description:
+        "We sit down together - in person or remotely - to understand your space, budget, goals, and aesthetic direction.",
+    },
+    {
+      title: "Design",
+      description:
+        "Our studio shapes the concept through layouts, material direction, and a visual language you can actually respond to.",
+    },
+    {
+      title: "Craft",
+      description:
+        "Joinery, flooring, cabinetry, and finishing work are executed with detail, timing, and durability in mind.",
+    },
+    {
+      title: "Deliver",
+      description:
+        "We install, refine, and hand over a finished space that feels composed rather than simply completed.",
+    },
+  ],
+  testimonialsSectionTitle: "What clients say.",
+  testimonialsSectionSubtitle: "Client Reviews",
+  testimonialsRatingLabel: "from 47 verified reviews",
+  testimonialsPrimaryCtaLabel: "Start Your Project",
+  testimonialsPrimaryCtaHref: "/contact",
+  blogSectionTitle: "From the workshop.",
+  blogSectionSubtitle:
+    "Search-led articles and design insights built to help the studio dominate local discovery around carpentry, interiors, and flooring in Victoria Falls.",
+  blogSectionCtaLabel: "All Articles",
+  blogSectionCtaHref: "/blog",
+  contactSectionTitle: "Let's build something great.",
   marqueeItems: [
     "Bespoke Carpentry",
     "Epoxy Flooring",

@@ -2,7 +2,7 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
 
-import type { BlogPost, FeaturedMedia, Project, Service, StudioAsset, StudioAssetKind } from "@/lib/types";
+import type { BlogPost, FeaturedMedia, Project, Service, SiteSettings, StudioAsset, StudioAssetKind } from "@/lib/types";
 
 const publicRoot = path.join(process.cwd(), "public");
 
@@ -68,6 +68,14 @@ function toCategory(url: string) {
     return "epoxy";
   }
 
+  if (lower.includes("/videos/")) {
+    return "workshop";
+  }
+
+  if (lower.includes("/imagery/")) {
+    return "detail";
+  }
+
   if (lower.includes("interior design")) {
     return "interiors";
   }
@@ -76,15 +84,11 @@ function toCategory(url: string) {
     return "carpentry";
   }
 
-  if (lower.includes("videos")) {
-    return "studio";
+  if (lower.includes("img_")) {
+    return "detail";
   }
 
-  if (lower.includes("imagery") || lower.includes("img_")) {
-    return "studio";
-  }
-
-  return "studio";
+  return "workshop";
 }
 
 function titleCase(value: string) {
@@ -167,20 +171,21 @@ async function walkDirectory(currentDirectory: string): Promise<string[]> {
 
 function categoryMatchesProject(category: string, projectCategory: string) {
   const project = projectCategory.toLowerCase();
+  const supportMatch = category === "detail" || category === "workshop";
 
   if (project.includes("interior") || project.includes("commercial") || project.includes("cabinetry")) {
-    return category === "interiors" || category === "studio";
+    return category === "interiors" || supportMatch;
   }
 
   if (project.includes("carpentry") || project.includes("furniture")) {
-    return category === "carpentry" || category === "studio";
+    return category === "carpentry" || supportMatch;
   }
 
   if (project.includes("floor")) {
-    return category === "epoxy" || category === "studio";
+    return category === "epoxy" || supportMatch;
   }
 
-  return category === "studio";
+  return supportMatch;
 }
 
 function categoryMatchesPost(category: string, postCategory: string) {
@@ -198,7 +203,7 @@ function categoryMatchesPost(category: string, postCategory: string) {
     return category === "carpentry" || category === "interiors";
   }
 
-  return category === "studio";
+  return category === "detail" || category === "workshop";
 }
 
 export const getStudioArchiveAssets = cache(async () => {
@@ -209,15 +214,26 @@ export const getStudioArchiveAssets = cache(async () => {
     .map((src) => createAsset(src));
 });
 
-export const getFeaturedMedia = cache(async (): Promise<FeaturedMedia> => {
+export const getFeaturedMedia = cache(async (siteSettings: SiteSettings): Promise<FeaturedMedia> => {
   const assets = await getStudioArchiveAssets();
 
   const find = (src: string) => assets.find((asset) => asset.src === src) ?? null;
+  const firstVideo = assets.find((asset) => asset.kind === "video") ?? null;
+  const firstImage = assets.find((asset) => asset.kind === "image") ?? null;
 
   return {
-    heroVideo: find("/epoxy.mp4"),
-    aboutImage: find("/interior design/IMG_5759.jpg"),
-    storyVideo: find("/videos/IMG_6785.mp4"),
+    heroVideo:
+      find(siteSettings.heroMediaUrl) ??
+      find("/epoxy.mp4") ??
+      firstVideo,
+    aboutImage:
+      find(siteSettings.aboutMediaUrl) ??
+      find("/interior design/IMG_5759.jpg") ??
+      firstImage,
+    storyVideo:
+      find(siteSettings.storyMediaUrl) ??
+      find("/videos/IMG_6785.mp4") ??
+      firstVideo,
   };
 });
 
@@ -256,7 +272,7 @@ export async function attachBlogPostMedia(posts: BlogPost[]) {
   const assets = await getStudioArchiveAssets();
 
   return posts.map((post) => {
-    const explicit = blogMediaMap[post.slug];
+    const explicit = post.coverImageUrl || blogMediaMap[post.slug];
     const fallback = assets.find(
       (asset) => asset.kind === "image" && categoryMatchesPost(asset.category, post.category),
     );

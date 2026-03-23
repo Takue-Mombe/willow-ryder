@@ -10,7 +10,8 @@ import {
   saveTestimonialAction,
 } from "@/app/admin/actions";
 import { LogoutButton } from "@/components/auth/logout-button";
-import type { BlogPost, Project, Service, SiteSettings, Testimonial } from "@/lib/types";
+import { MediaFrame } from "@/components/site/media-frame";
+import type { BlogPost, Project, Service, SiteSettings, StudioAsset, Testimonial, TitledItem } from "@/lib/types";
 
 type AdminDashboardProps = {
   email: string | null;
@@ -20,10 +21,15 @@ type AdminDashboardProps = {
   blogPosts: BlogPost[];
   testimonials: Testimonial[];
   status: string | undefined;
+  archiveAssets: StudioAsset[];
 };
 
 function joinLines(items: string[]) {
   return items.join("\n");
+}
+
+function joinTitledLines(items: TitledItem[]) {
+  return items.map((item) => `${item.title} :: ${item.description}`).join("\n");
 }
 
 function StatusBanner({ status }: { status: string | undefined }) {
@@ -42,6 +48,7 @@ export function AdminDashboard({
   blogPosts,
   testimonials,
   status,
+  archiveAssets,
 }: AdminDashboardProps) {
   return (
     <main className="admin-shell shell">
@@ -125,6 +132,18 @@ export function AdminDashboard({
               <input defaultValue={siteSettings.heroEyebrow} name="hero_eyebrow" type="text" />
             </label>
             <label>
+              Hero media URL
+              <input defaultValue={siteSettings.heroMediaUrl} name="hero_media_url" type="text" />
+            </label>
+            <label>
+              Hero quote
+              <input defaultValue={siteSettings.heroQuote} name="hero_quote" type="text" />
+            </label>
+            <label>
+              Hero location label
+              <input defaultValue={siteSettings.heroLocationText} name="hero_location_text" type="text" />
+            </label>
+            <label>
               Primary CTA label
               <input defaultValue={siteSettings.primaryCtaLabel} name="primary_cta_label" type="text" />
             </label>
@@ -153,6 +172,86 @@ export function AdminDashboard({
               <input defaultValue={siteSettings.clientRating} name="client_rating" type="text" />
             </label>
             <label>
+              Services title
+              <input defaultValue={siteSettings.servicesSectionTitle} name="services_section_title" type="text" />
+            </label>
+            <label>
+              Services CTA label
+              <input defaultValue={siteSettings.servicesSectionCtaLabel} name="services_section_cta_label" type="text" />
+            </label>
+            <label>
+              Services CTA href
+              <input defaultValue={siteSettings.servicesSectionCtaHref} name="services_section_cta_href" type="text" />
+            </label>
+            <label>
+              Portfolio title
+              <input defaultValue={siteSettings.portfolioSectionTitle} name="portfolio_section_title" type="text" />
+            </label>
+            <label>
+              Portfolio CTA label
+              <input defaultValue={siteSettings.portfolioSectionCtaLabel} name="portfolio_section_cta_label" type="text" />
+            </label>
+            <label>
+              Portfolio CTA href
+              <input defaultValue={siteSettings.portfolioSectionCtaHref} name="portfolio_section_cta_href" type="text" />
+            </label>
+            <label>
+              About section title
+              <input defaultValue={siteSettings.aboutSectionTitle} name="about_section_title" type="text" />
+            </label>
+            <label>
+              About media URL
+              <input defaultValue={siteSettings.aboutMediaUrl} name="about_media_url" type="text" />
+            </label>
+            <label>
+              Studio film title
+              <input defaultValue={siteSettings.studioFilmTitle} name="studio_film_title" type="text" />
+            </label>
+            <label>
+              Story / film media URL
+              <input defaultValue={siteSettings.storyMediaUrl} name="story_media_url" type="text" />
+            </label>
+            <label>
+              Process title
+              <input defaultValue={siteSettings.processSectionTitle} name="process_section_title" type="text" />
+            </label>
+            <label>
+              Testimonials title
+              <input defaultValue={siteSettings.testimonialsSectionTitle} name="testimonials_section_title" type="text" />
+            </label>
+            <label>
+              Testimonials label
+              <input defaultValue={siteSettings.testimonialsSectionSubtitle} name="testimonials_section_subtitle" type="text" />
+            </label>
+            <label>
+              Testimonials rating label
+              <input defaultValue={siteSettings.testimonialsRatingLabel} name="testimonials_rating_label" type="text" />
+            </label>
+            <label>
+              Testimonials CTA label
+              <input defaultValue={siteSettings.testimonialsPrimaryCtaLabel} name="testimonials_primary_cta_label" type="text" />
+            </label>
+            <label>
+              Testimonials CTA href
+              <input defaultValue={siteSettings.testimonialsPrimaryCtaHref} name="testimonials_primary_cta_href" type="text" />
+            </label>
+            <label>
+              Blog section title
+              <input defaultValue={siteSettings.blogSectionTitle} name="blog_section_title" type="text" />
+            </label>
+            <label>
+              Blog CTA label
+              <input defaultValue={siteSettings.blogSectionCtaLabel} name="blog_section_cta_label" type="text" />
+            </label>
+            <label>
+              Blog CTA href
+              <input defaultValue={siteSettings.blogSectionCtaHref} name="blog_section_cta_href" type="text" />
+            </label>
+            <label>
+              Contact section title
+              <input defaultValue={siteSettings.contactSectionTitle} name="contact_section_title" type="text" />
+            </label>
+            <label>
               Open Graph image path
               <input defaultValue={siteSettings.ogImageUrl} name="og_image_url" type="text" />
             </label>
@@ -171,6 +270,14 @@ export function AdminDashboard({
             <textarea defaultValue={siteSettings.heroDescription} name="hero_description" rows={4} />
           </label>
           <label>
+            Services section subtitle
+            <textarea defaultValue={siteSettings.servicesSectionSubtitle} name="services_section_subtitle" rows={3} />
+          </label>
+          <label>
+            Portfolio section subtitle
+            <textarea defaultValue={siteSettings.portfolioSectionSubtitle} name="portfolio_section_subtitle" rows={3} />
+          </label>
+          <label>
             Marquee items (one per line)
             <textarea defaultValue={joinLines(siteSettings.marqueeItems)} name="marquee_items" rows={5} />
           </label>
@@ -185,6 +292,26 @@ export function AdminDashboard({
           <label>
             About story tertiary
             <textarea defaultValue={siteSettings.aboutStoryTertiary} name="about_story_tertiary" rows={3} />
+          </label>
+          <label>
+            About values (`Title :: Description` per line)
+            <textarea defaultValue={joinTitledLines(siteSettings.aboutValues)} name="about_values" rows={6} />
+          </label>
+          <label>
+            Studio film description
+            <textarea defaultValue={siteSettings.studioFilmDescription} name="studio_film_description" rows={4} />
+          </label>
+          <label>
+            Process section subtitle
+            <textarea defaultValue={siteSettings.processSectionSubtitle} name="process_section_subtitle" rows={3} />
+          </label>
+          <label>
+            Process steps (`Title :: Description` per line)
+            <textarea defaultValue={joinTitledLines(siteSettings.processSteps)} name="process_steps" rows={6} />
+          </label>
+          <label>
+            Blog section subtitle
+            <textarea defaultValue={siteSettings.blogSectionSubtitle} name="blog_section_subtitle" rows={3} />
           </label>
           <label>
             Contact intro
@@ -207,6 +334,30 @@ export function AdminDashboard({
             Save Site Settings
           </button>
         </form>
+      </section>
+
+      <section className="admin-panel" id="media-library">
+        <div className="admin-panel__intro">
+          <h2>Media Library</h2>
+          <p>
+            Every image and video found in `public/` is listed here. Use these paths in
+            the home settings, service image fields, project image fields, and blog
+            cover fields.
+          </p>
+        </div>
+
+        <div className="admin-media-grid">
+          {archiveAssets.map((asset) => (
+            <article className="admin-media-card" key={asset.id}>
+              <MediaFrame asset={asset} autoPlay={asset.kind === "video"} className="admin-media-card__frame" controls={asset.kind === "video"} loop={asset.kind === "video"} muted />
+              <div className="admin-media-card__body">
+                <span>{asset.category} · {asset.kind}</span>
+                <strong>{asset.title}</strong>
+                <code>{asset.src}</code>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="admin-panel" id="services">
@@ -321,6 +472,10 @@ function ServiceForm({ service }: { service: Service | null }) {
           <label>
             Category
             <input defaultValue={service?.category ?? ""} name="category" type="text" />
+          </label>
+          <label>
+            Image URL
+            <input defaultValue={service?.imageUrl ?? ""} name="image_url" type="text" />
           </label>
           <label>
             Sort order
@@ -497,6 +652,10 @@ function PostForm({ post }: { post: BlogPost | null }) {
           <label>
             Cover accent
             <input defaultValue={post?.coverAccent ?? "#C4956A"} name="cover_accent" type="text" />
+          </label>
+          <label>
+            Cover image URL
+            <input defaultValue={post?.coverImageUrl ?? ""} name="cover_image_url" type="text" />
           </label>
           <label className="admin-checkbox">
             <input defaultChecked={post?.featured ?? false} name="featured" type="checkbox" />
