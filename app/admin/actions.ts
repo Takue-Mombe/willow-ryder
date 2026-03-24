@@ -41,6 +41,22 @@ function slugify(value: string) {
     .slice(0, 80);
 }
 
+function getFileExtension(fileName: string) {
+  const extension = fileName.split(".").pop()?.toLowerCase() ?? "";
+  return extension ? `.${extension}` : "";
+}
+
+function getAssetKind(fileName: string) {
+  const extension = getFileExtension(fileName);
+  return [".mp4", ".webm", ".mov", ".avi"].includes(extension) ? "video" : "image";
+}
+
+function getStorageFileName(fileName: string) {
+  const extension = getFileExtension(fileName);
+  const base = fileName.replace(extension, "");
+  return `${slugify(base) || "asset"}-${Date.now()}${extension || ".jpg"}`;
+}
+
 async function requireAdminClient() {
   const supabase = await createSupabaseServerClient();
 
@@ -78,6 +94,7 @@ export async function saveSiteSettingsAction(formData: FormData) {
   const payload = {
     id: id || undefined,
     business_name: text(formData.get("business_name")),
+    logo_url: text(formData.get("logo_url")) || "/logo/logo.jpeg",
     business_tagline: text(formData.get("business_tagline")),
     business_description: text(formData.get("business_description")),
     phone: text(formData.get("phone")),
@@ -115,6 +132,8 @@ export async function saveSiteSettingsAction(formData: FormData) {
     about_section_title: text(formData.get("about_section_title")),
     about_media_url: text(formData.get("about_media_url")),
     about_values: splitTitledLines(formData.get("about_values")),
+    team_section_title: text(formData.get("team_section_title")),
+    team_section_subtitle: text(formData.get("team_section_subtitle")),
     studio_film_title: text(formData.get("studio_film_title")),
     studio_film_description: text(formData.get("studio_film_description")),
     story_media_url: text(formData.get("story_media_url")),
@@ -144,7 +163,7 @@ export async function saveSiteSettingsAction(formData: FormData) {
 
   await supabase.from("site_settings").upsert(payload);
   revalidatePublicSite([]);
-  redirect("/admin?status=site-settings-saved#site-settings");
+  redirect("/admin/site?status=site-settings-saved");
 }
 
 export async function saveServiceAction(formData: FormData) {
@@ -170,7 +189,7 @@ export async function saveServiceAction(formData: FormData) {
 
   await supabase.from("services").upsert(payload);
   revalidatePublicSite([`/services/${slug}`]);
-  redirect("/admin?status=service-saved#services");
+  redirect("/admin/services?status=service-saved");
 }
 
 export async function deleteServiceAction(formData: FormData) {
@@ -179,7 +198,7 @@ export async function deleteServiceAction(formData: FormData) {
 
   await supabase.from("services").delete().eq("id", id);
   revalidatePublicSite([]);
-  redirect("/admin?status=service-deleted#services");
+  redirect("/admin/services?status=service-deleted");
 }
 
 export async function saveProjectAction(formData: FormData) {
@@ -210,7 +229,7 @@ export async function saveProjectAction(formData: FormData) {
 
   await supabase.from("projects").upsert(payload);
   revalidatePublicSite([`/portfolio/${slug}`]);
-  redirect("/admin?status=project-saved#projects");
+  redirect("/admin/projects?status=project-saved");
 }
 
 export async function deleteProjectAction(formData: FormData) {
@@ -219,7 +238,7 @@ export async function deleteProjectAction(formData: FormData) {
 
   await supabase.from("projects").delete().eq("id", id);
   revalidatePublicSite([]);
-  redirect("/admin?status=project-deleted#projects");
+  redirect("/admin/projects?status=project-deleted");
 }
 
 export async function savePostAction(formData: FormData) {
@@ -245,7 +264,7 @@ export async function savePostAction(formData: FormData) {
 
   await supabase.from("blog_posts").upsert(payload);
   revalidatePublicSite([`/blog/${slug}`]);
-  redirect("/admin?status=post-saved#posts");
+  redirect("/admin/blog?status=post-saved");
 }
 
 export async function deletePostAction(formData: FormData) {
@@ -254,7 +273,7 @@ export async function deletePostAction(formData: FormData) {
 
   await supabase.from("blog_posts").delete().eq("id", id);
   revalidatePublicSite([]);
-  redirect("/admin?status=post-deleted#posts");
+  redirect("/admin/blog?status=post-deleted");
 }
 
 export async function saveTestimonialAction(formData: FormData) {
@@ -273,7 +292,7 @@ export async function saveTestimonialAction(formData: FormData) {
 
   await supabase.from("testimonials").upsert(payload);
   revalidatePublicSite([]);
-  redirect("/admin?status=testimonial-saved#testimonials");
+  redirect("/admin/testimonials?status=testimonial-saved");
 }
 
 export async function deleteTestimonialAction(formData: FormData) {
@@ -282,5 +301,90 @@ export async function deleteTestimonialAction(formData: FormData) {
 
   await supabase.from("testimonials").delete().eq("id", id);
   revalidatePublicSite([]);
-  redirect("/admin?status=testimonial-deleted#testimonials");
+  redirect("/admin/testimonials?status=testimonial-deleted");
+}
+
+export async function saveTeamMemberAction(formData: FormData) {
+  const supabase = await requireAdminClient();
+
+  const payload = {
+    id: text(formData.get("id")) || undefined,
+    name: text(formData.get("name")),
+    role: text(formData.get("role")),
+    phone: text(formData.get("phone")),
+    email: text(formData.get("email")),
+    photo_url: text(formData.get("photo_url")),
+    sort_order: Number(text(formData.get("sort_order")) || "0"),
+  };
+
+  await supabase.from("team_members").upsert(payload);
+  revalidatePublicSite(["/about", "/contact"]);
+  redirect("/admin/team?status=team-member-saved");
+}
+
+export async function deleteTeamMemberAction(formData: FormData) {
+  const supabase = await requireAdminClient();
+  const id = text(formData.get("id"));
+
+  await supabase.from("team_members").delete().eq("id", id);
+  revalidatePublicSite(["/about", "/contact"]);
+  redirect("/admin/team?status=team-member-deleted");
+}
+
+export async function uploadMediaAssetAction(formData: FormData) {
+  const supabase = await requireAdminClient();
+  const title = text(formData.get("title"));
+  const alt = text(formData.get("alt")) || title;
+  const category = text(formData.get("category")) || "workshop";
+  const sortOrder = Number(text(formData.get("sort_order")) || "0");
+  const file = formData.get("file");
+
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Please choose a file to upload.");
+  }
+
+  const kind = getAssetKind(file.name);
+  const storageFileName = getStorageFileName(file.name);
+  const storagePath = `${category}/${storageFileName}`;
+  const { error: uploadError } = await supabase.storage
+    .from("media-assets")
+    .upload(storagePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || undefined,
+    });
+
+  if (uploadError) {
+    throw new Error(uploadError.message);
+  }
+
+  const { data: publicUrlData } = supabase.storage.from("media-assets").getPublicUrl(storagePath);
+
+  await supabase.from("media_assets").insert({
+    title: title || file.name,
+    alt,
+    src: publicUrlData.publicUrl,
+    storage_path: storagePath,
+    kind,
+    category,
+    source: "database",
+    sort_order: sortOrder,
+  });
+
+  revalidatePublicSite([]);
+  redirect("/admin/media?status=media-uploaded");
+}
+
+export async function deleteMediaAssetAction(formData: FormData) {
+  const supabase = await requireAdminClient();
+  const id = text(formData.get("id"));
+  const storagePath = text(formData.get("storage_path"));
+
+  if (storagePath) {
+    await supabase.storage.from("media-assets").remove([storagePath]);
+  }
+
+  await supabase.from("media_assets").delete().eq("id", id);
+  revalidatePublicSite([]);
+  redirect("/admin/media?status=media-deleted");
 }

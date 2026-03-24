@@ -8,6 +8,7 @@ create table if not exists public.admin_users (
 create table if not exists public.site_settings (
   id text primary key,
   business_name text not null,
+  logo_url text not null default '/logo/logo.jpeg',
   business_tagline text not null,
   business_description text not null,
   phone text not null,
@@ -45,6 +46,8 @@ create table if not exists public.site_settings (
   about_section_title text not null default '',
   about_media_url text not null default '',
   about_values jsonb not null default '[]'::jsonb,
+  team_section_title text not null default '',
+  team_section_subtitle text not null default '',
   studio_film_title text not null default '',
   studio_film_description text not null default '',
   story_media_url text not null default '',
@@ -146,9 +149,38 @@ create table if not exists public.blog_posts (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.team_members (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  role text not null,
+  phone text not null default '',
+  email text not null default '',
+  photo_url text not null default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists team_members_name_key on public.team_members (name);
+
+create table if not exists public.media_assets (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  alt text not null default '',
+  src text not null,
+  storage_path text not null default '',
+  kind text not null check (kind in ('image', 'video')),
+  category text not null default 'workshop',
+  source text not null default 'database' check (source in ('database')),
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 alter table public.site_settings add column if not exists hero_quote text not null default '';
 alter table public.site_settings add column if not exists hero_location_text text not null default '';
 alter table public.site_settings add column if not exists hero_media_url text not null default '';
+alter table public.site_settings add column if not exists logo_url text not null default '/logo/logo.jpeg';
 alter table public.site_settings add column if not exists services_section_title text not null default '';
 alter table public.site_settings add column if not exists services_section_subtitle text not null default '';
 alter table public.site_settings add column if not exists services_section_cta_label text not null default '';
@@ -160,6 +192,8 @@ alter table public.site_settings add column if not exists portfolio_section_cta_
 alter table public.site_settings add column if not exists about_section_title text not null default '';
 alter table public.site_settings add column if not exists about_media_url text not null default '';
 alter table public.site_settings add column if not exists about_values jsonb not null default '[]'::jsonb;
+alter table public.site_settings add column if not exists team_section_title text not null default '';
+alter table public.site_settings add column if not exists team_section_subtitle text not null default '';
 alter table public.site_settings add column if not exists studio_film_title text not null default '';
 alter table public.site_settings add column if not exists studio_film_description text not null default '';
 alter table public.site_settings add column if not exists story_media_url text not null default '';
@@ -220,6 +254,16 @@ create trigger set_testimonials_updated_at
 before update on public.testimonials
 for each row execute function public.set_updated_at();
 
+drop trigger if exists set_team_members_updated_at on public.team_members;
+create trigger set_team_members_updated_at
+before update on public.team_members
+for each row execute function public.set_updated_at();
+
+drop trigger if exists set_media_assets_updated_at on public.media_assets;
+create trigger set_media_assets_updated_at
+before update on public.media_assets
+for each row execute function public.set_updated_at();
+
 drop trigger if exists set_blog_posts_updated_at on public.blog_posts;
 create trigger set_blog_posts_updated_at
 before update on public.blog_posts
@@ -230,6 +274,8 @@ alter table public.site_settings enable row level security;
 alter table public.services enable row level security;
 alter table public.projects enable row level security;
 alter table public.testimonials enable row level security;
+alter table public.team_members enable row level security;
+alter table public.media_assets enable row level security;
 alter table public.blog_posts enable row level security;
 alter table public.inquiries enable row level security;
 
@@ -324,6 +370,36 @@ for select
 to anon, authenticated
 using (true);
 
+drop policy if exists "Admins can manage team members" on public.team_members;
+create policy "Admins can manage team members"
+on public.team_members
+for all
+to authenticated
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
+
+drop policy if exists "Public can read team members" on public.team_members;
+create policy "Public can read team members"
+on public.team_members
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Admins can manage media assets" on public.media_assets;
+create policy "Admins can manage media assets"
+on public.media_assets
+for all
+to authenticated
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
+
+drop policy if exists "Public can read media assets" on public.media_assets;
+create policy "Public can read media assets"
+on public.media_assets
+for select
+to anon, authenticated
+using (true);
+
 drop policy if exists "Admins can manage blog posts" on public.blog_posts;
 create policy "Admins can manage blog posts"
 on public.blog_posts
@@ -356,6 +432,7 @@ using (public.is_admin(auth.uid()));
 insert into public.site_settings (
   id,
   business_name,
+  logo_url,
   business_tagline,
   business_description,
   phone,
@@ -393,6 +470,8 @@ insert into public.site_settings (
   about_section_title,
   about_media_url,
   about_values,
+  team_section_title,
+  team_section_subtitle,
   studio_film_title,
   studio_film_description,
   story_media_url,
@@ -421,6 +500,7 @@ insert into public.site_settings (
 ) values (
   'site-settings-default',
   'Winmore Creations',
+  '/logo/logo.jpeg',
   'Bespoke carpentry, interior design, and luxury flooring in Victoria Falls, Zimbabwe.',
   'Winmore Creations is a Victoria Falls studio shaping spaces through bespoke carpentry, custom furniture, interior design, epoxy flooring, and wooden flooring for homes, lodges, offices, and hospitality brands across Zimbabwe.',
   '+263 78 000 0000',
@@ -458,6 +538,8 @@ insert into public.site_settings (
   'Rooted in Victoria Falls.',
   '/interior design/IMG_5759.jpg',
   '[{"title":"Local Timber","description":"Ethically sourced Zimbabwean hardwoods sit at the core of our work."},{"title":"Precision Build","description":"Every piece is measured, shaped, and finished by skilled artisans."},{"title":"Turnkey Service","description":"Design through delivery, with one team carrying the full responsibility."},{"title":"Lasting Quality","description":"We build to outlast trends, not just satisfy a brief for the month."}]'::jsonb,
+  'The people behind the craft.',
+  'A hands-on leadership team guiding design, delivery, and client communication from Victoria Falls.',
   'A closer look at the making behind the finish.',
   'From timber shaping to the final polish, the studio process is part technical discipline, part atmosphere-building. Use the CMS to swap this motion feature whenever you want a different lead visual.',
   '/videos/IMG_6785.mp4',
@@ -490,3 +572,42 @@ insert into public.site_settings (
   ],
   '/opengraph-image'
 ) on conflict (id) do nothing;
+
+insert into public.team_members (name, role, phone, email, photo_url, sort_order)
+values
+  ('Blessed Gore', 'Managing Director', '0785549266', 'blessedgore@winmorecreations.co.zw', '/logo/logo.jpeg', 1),
+  ('Tinashe Gore', 'Sales, Marketing and Project Manager', '0785549266', 'tinashegore@winmorecreations.co.zw', '/logo/logo.jpeg', 2)
+on conflict (name) do nothing;
+
+insert into storage.buckets (id, name, public)
+values ('media-assets', 'media-assets', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public can read media assets bucket" on storage.objects;
+create policy "Public can read media assets bucket"
+on storage.objects
+for select
+to anon, authenticated
+using (bucket_id = 'media-assets');
+
+drop policy if exists "Admins can upload media assets bucket" on storage.objects;
+create policy "Admins can upload media assets bucket"
+on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'media-assets' and public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can update media assets bucket" on storage.objects;
+create policy "Admins can update media assets bucket"
+on storage.objects
+for update
+to authenticated
+using (bucket_id = 'media-assets' and public.is_admin(auth.uid()))
+with check (bucket_id = 'media-assets' and public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can delete media assets bucket" on storage.objects;
+create policy "Admins can delete media assets bucket"
+on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'media-assets' and public.is_admin(auth.uid()));

@@ -34,7 +34,7 @@ export default async function Home() {
     addressRegion: siteSettings.addressRegion,
     addressCountry: siteSettings.addressCountry,
     websiteUrl: siteSettings.websiteUrl,
-    image: siteSettings.ogImageUrl,
+    image: siteSettings.logoUrl,
   });
 
   return (

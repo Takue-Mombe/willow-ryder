@@ -1,5 +1,6 @@
 import type {
   BlogPost,
+  TeamMember,
   JourneyTheme,
   Project,
   Service,
@@ -10,6 +11,7 @@ import type {
 export const fallbackSiteSettings: SiteSettings = {
   id: "site-settings-default",
   businessName: "Winmore Creations",
+  logoUrl: "/logo/logo.jpeg",
   businessTagline:
     "Bespoke carpentry, interior design, and luxury flooring in Victoria Falls, Zimbabwe.",
   businessDescription:
@@ -69,6 +71,9 @@ export const fallbackSiteSettings: SiteSettings = {
       description: "We build to outlast trends, not just satisfy a brief for the month.",
     },
   ],
+  teamSectionTitle: "The people behind the craft.",
+  teamSectionSubtitle:
+    "A hands-on leadership team guiding design, delivery, and client communication from Victoria Falls.",
   studioFilmTitle: "A closer look at the making behind the finish.",
   studioFilmDescription:
     "From timber shaping to the final polish, the studio process is part technical discipline, part atmosphere-building. Use the CMS to swap this motion feature whenever you want a different lead visual.",
@@ -144,6 +149,27 @@ export const fallbackSiteSettings: SiteSettings = {
   ],
   ogImageUrl: "/opengraph-image",
 };
+
+export const fallbackTeamMembers: TeamMember[] = [
+  {
+    id: "team-blessed-gore",
+    name: "Blessed Gore",
+    role: "Managing Director",
+    phone: "0785549266",
+    email: "blessedgore@winmorecreations.co.zw",
+    photoUrl: "/logo/logo.jpeg",
+    sortOrder: 1,
+  },
+  {
+    id: "team-tinashe-gore",
+    name: "Tinashe Gore",
+    role: "Sales, Marketing and Project Manager",
+    phone: "0785549266",
+    email: "tinashegore@winmorecreations.co.zw",
+    photoUrl: "/logo/logo.jpeg",
+    sortOrder: 2,
+  },
+];
 
 export const fallbackServices: Service[] = [
   {

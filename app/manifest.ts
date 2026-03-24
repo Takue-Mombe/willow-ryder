@@ -1,8 +1,12 @@
 import type { MetadataRoute } from "next";
 
-export default function manifest(): MetadataRoute.Manifest {
+import { getSiteSettings } from "@/lib/site-data";
+
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const siteSettings = await getSiteSettings();
+
   return {
-    name: "Winmore Creations",
+    name: siteSettings.businessName,
     short_name: "Winmore",
     description:
       "Bespoke carpentry, interior design, and premium flooring in Victoria Falls, Zimbabwe.",
@@ -12,9 +16,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#2c1a0e",
     icons: [
       {
-        src: "/favicon.ico",
-        sizes: "any",
-        type: "image/x-icon",
+        src: siteSettings.logoUrl,
+        sizes: "512x512",
+        type: "image/jpeg",
       },
     ],
   };

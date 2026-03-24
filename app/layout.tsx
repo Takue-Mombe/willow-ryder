@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
 
-import { SiteFooter } from "@/components/site/footer";
-import { SiteHeader } from "@/components/site/header";
+import { SiteChrome } from "@/components/site/site-chrome";
 import { getSiteUrl } from "@/lib/env";
 import { getSiteSettings } from "@/lib/site-data";
 
@@ -21,61 +20,58 @@ const body = Jost({
   weight: ["300", "400", "500", "600"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
-  title: {
-    default:
-      "Winmore Creations | Bespoke Carpentry, Interior Design & Flooring in Victoria Falls, Zimbabwe",
-    template: "%s | Winmore Creations",
-  },
-  description:
-    "Winmore Creations is Victoria Falls' premier carpentry and interior design studio. We craft bespoke wooden furniture, luxury epoxy flooring, custom desks, chairs, and full interior transformations across Zimbabwe.",
-  applicationName: "Winmore Creations",
-  authors: [{ name: "Winmore Creations" }],
-  creator: "Winmore Creations",
-  publisher: "Winmore Creations",
-  category: "Bespoke carpentry and interior design",
-  robots: {
-    index: true,
-    follow: true,
-  },
-  keywords: [
-    "carpentry Victoria Falls",
-    "interior design Victoria Falls Zimbabwe",
-    "epoxy flooring Victoria Falls",
-    "wooden flooring Zimbabwe",
-    "custom furniture Zimbabwe",
-  ],
-  manifest: "/manifest.webmanifest",
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_ZW",
-    url: "/",
-    siteName: "Winmore Creations",
-    title:
-      "Winmore Creations | Bespoke Carpentry, Interior Design & Flooring in Victoria Falls, Zimbabwe",
-    description:
-      "Bespoke carpentry, custom furniture, epoxy flooring, wooden floors, and interior design in Victoria Falls, Zimbabwe.",
-    images: ["/opengraph-image"],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Winmore Creations | Carpentry & Interior Design — Victoria Falls",
-    description:
-      "Bespoke furniture, epoxy flooring, and interior design in Victoria Falls, Zimbabwe.",
-    images: ["/opengraph-image"],
-  },
-  other: {
-    "geo.region": "ZW-MN",
-    "geo.placename": "Victoria Falls, Zimbabwe",
-    "geo.position": "-17.9243;25.8572",
-    ICBM: "-17.9243,25.8572",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const siteSettings = await getSiteSettings();
+
+  return {
+    metadataBase: new URL(getSiteUrl()),
+    title: {
+      default: siteSettings.seoDefaultTitle,
+      template: `%s | ${siteSettings.businessName}`,
+    },
+    description: siteSettings.seoDefaultDescription,
+    applicationName: siteSettings.businessName,
+    authors: [{ name: siteSettings.businessName }],
+    creator: siteSettings.businessName,
+    publisher: siteSettings.businessName,
+    category: "Bespoke carpentry and interior design",
+    robots: {
+      index: true,
+      follow: true,
+    },
+    keywords: siteSettings.seoKeywords,
+    manifest: "/manifest.webmanifest",
+    alternates: {
+      canonical: "/",
+    },
+    icons: {
+      icon: [{ url: siteSettings.logoUrl, type: "image/jpeg" }],
+      shortcut: [siteSettings.logoUrl],
+      apple: [siteSettings.logoUrl],
+    },
+    openGraph: {
+      type: "website",
+      locale: "en_ZW",
+      url: "/",
+      siteName: siteSettings.businessName,
+      title: siteSettings.seoDefaultTitle,
+      description: siteSettings.seoDefaultDescription,
+      images: [siteSettings.ogImageUrl],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${siteSettings.businessName} | Carpentry & Interior Design — Victoria Falls`,
+      description: siteSettings.seoDefaultDescription,
+      images: [siteSettings.ogImageUrl],
+    },
+    other: {
+      "geo.region": "ZW-MN",
+      "geo.placename": "Victoria Falls, Zimbabwe",
+      "geo.position": "-17.9243;25.8572",
+      ICBM: "-17.9243,25.8572",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -87,11 +83,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
-        <div className="site-frame">
-          <SiteHeader brandName={siteSettings.businessName} />
-          {children}
-          <SiteFooter siteSettings={siteSettings} />
-        </div>
+        <SiteChrome siteSettings={siteSettings}>{children}</SiteChrome>
       </body>
     </html>
   );

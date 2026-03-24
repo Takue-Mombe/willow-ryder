@@ -2,6 +2,7 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
 
+import { createSupabasePublicClient } from "@/lib/supabase/public";
 import type { BlogPost, FeaturedMedia, Project, Service, SiteSettings, StudioAsset, StudioAssetKind } from "@/lib/types";
 
 const publicRoot = path.join(process.cwd(), "public");
@@ -142,8 +143,50 @@ function createAsset(src: string): StudioAsset {
     alt: `${title} - ${titleCase(category)} work by Winmore Creations`,
     kind,
     category,
+    source: "public",
     poster,
   };
+}
+
+function mergeAssets(publicAssets: StudioAsset[], databaseAssets: StudioAsset[]) {
+  const merged = new Map<string, StudioAsset>();
+
+  [...publicAssets, ...databaseAssets].forEach((asset) => {
+    if (!asset.src) {
+      return;
+    }
+
+    merged.set(asset.src, asset);
+  });
+
+  return [...merged.values()].sort((left, right) => left.title.localeCompare(right.title));
+}
+
+async function getDatabaseAssets() {
+  const supabase = createSupabasePublicClient();
+
+  if (!supabase) {
+    return [] as StudioAsset[];
+  }
+
+  const { data } = await supabase
+    .from("media_assets")
+    .select("id, title, alt, src, kind, category")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  return (data ?? [])
+    .map<StudioAsset>((row) => ({
+      id: String(row.id),
+      src: String(row.src ?? ""),
+      fileName: String(row.src ?? "").split("/").at(-1) ?? "",
+      title: String(row.title ?? "Uploaded Asset"),
+      alt: String(row.alt ?? row.title ?? "Uploaded studio asset"),
+      kind: row.kind === "video" ? "video" : "image",
+      category: String(row.category ?? "workshop"),
+      source: "database" as const,
+    }))
+    .filter((asset) => asset.src);
 }
 
 async function walkDirectory(currentDirectory: string): Promise<string[]> {
@@ -207,11 +250,13 @@ function categoryMatchesPost(category: string, postCategory: string) {
 }
 
 export const getStudioArchiveAssets = cache(async () => {
-  const files = await walkDirectory(publicRoot);
+  const [files, databaseAssets] = await Promise.all([walkDirectory(publicRoot), getDatabaseAssets()]);
 
-  return files
+  const publicAssets = files
     .sort((left, right) => left.localeCompare(right))
     .map((src) => createAsset(src));
+
+  return mergeAssets(publicAssets, databaseAssets);
 });
 
 export const getFeaturedMedia = cache(async (siteSettings: SiteSettings): Promise<FeaturedMedia> => {

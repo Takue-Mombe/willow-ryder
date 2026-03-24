@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import type { SiteSettings } from "@/lib/types";
@@ -14,7 +15,12 @@ export function SiteFooter({ siteSettings }: SiteFooterProps) {
       <div className="shell site-footer__inner">
         <div className="site-footer__brand-block">
           <Link className="site-footer__brand" href="/">
-            {brandFirst} <span>{brandRest.join(" ")}</span>
+            <span className="site-footer__brand-mark">
+              <Image alt={`${siteSettings.businessName} logo`} fill sizes="52px" src={siteSettings.logoUrl} />
+            </span>
+            <span className="site-footer__brand-text">
+              {brandFirst} <span>{brandRest.join(" ")}</span>
+            </span>
           </Link>
           <p>{siteSettings.businessDescription}</p>
           <div className="site-footer__contact-lines">
@@ -38,8 +44,6 @@ export function SiteFooter({ siteSettings }: SiteFooterProps) {
           <h3>Studio</h3>
           <Link href="/about">About Us</Link>
           <Link href="/contact">Contact</Link>
-          <Link href="/login">Admin Login</Link>
-          <Link href="/admin">CMS</Link>
         </div>
 
         <div className="site-footer__column">

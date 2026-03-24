@@ -6,6 +6,7 @@ export type TitledItem = {
 export type SiteSettings = {
   id: string;
   businessName: string;
+  logoUrl: string;
   businessTagline: string;
   businessDescription: string;
   phone: string;
@@ -43,6 +44,8 @@ export type SiteSettings = {
   aboutSectionTitle: string;
   aboutMediaUrl: string;
   aboutValues: TitledItem[];
+  teamSectionTitle: string;
+  teamSectionSubtitle: string;
   studioFilmTitle: string;
   studioFilmDescription: string;
   storyMediaUrl: string;
@@ -144,7 +147,30 @@ export type StudioAsset = {
   alt: string;
   kind: StudioAssetKind;
   category: string;
+  source?: "public" | "database";
   poster?: string;
+};
+
+export type TeamMember = {
+  id: string;
+  name: string;
+  role: string;
+  phone: string;
+  email: string;
+  photoUrl: string;
+  sortOrder: number;
+};
+
+export type MediaAssetRecord = {
+  id: string;
+  title: string;
+  alt: string;
+  src: string;
+  storagePath: string;
+  kind: StudioAssetKind;
+  category: string;
+  source: "database";
+  sortOrder: number;
 };
 
 export type FeaturedMedia = {

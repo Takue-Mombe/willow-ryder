@@ -1,6 +1,6 @@
 import { ContactForm } from "@/components/site/contact-form";
 import { buildMetadata } from "@/lib/seo";
-import { getServices, getSiteSettings } from "@/lib/site-data";
+import { getServices, getSiteSettings, getTeamMembers } from "@/lib/site-data";
 
 export async function generateMetadata() {
   const siteSettings = await getSiteSettings();
@@ -15,7 +15,11 @@ export async function generateMetadata() {
 }
 
 export default async function ContactPage() {
-  const [siteSettings, services] = await Promise.all([getSiteSettings(), getServices()]);
+  const [siteSettings, services, teamMembers] = await Promise.all([
+    getSiteSettings(),
+    getServices(),
+    getTeamMembers(),
+  ]);
 
   return (
     <main className="content-page shell">
@@ -59,6 +63,17 @@ export default async function ContactPage() {
               <article className="info-card" key={service.id}>
                 <h3>{service.title}</h3>
                 <p>{service.shortDescription}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="team-contacts">
+            {teamMembers.map((member) => (
+              <article className="team-contact-card" key={member.id}>
+                <strong>{member.name}</strong>
+                <span>{member.role}</span>
+                <a href={`tel:${member.phone.replace(/\s+/g, "")}`}>{member.phone}</a>
+                <a href={`mailto:${member.email}`}>{member.email}</a>
               </article>
             ))}
           </div>

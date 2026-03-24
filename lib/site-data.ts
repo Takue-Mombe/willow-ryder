@@ -1,9 +1,9 @@
 import { checkAdminAccess } from "@/lib/admin-access";
-import { fallbackBlogPosts, fallbackJourneys, fallbackProjects, fallbackServices, fallbackSiteSettings, fallbackTestimonials } from "@/lib/fallback-data";
+import { fallbackBlogPosts, fallbackJourneys, fallbackProjects, fallbackServices, fallbackSiteSettings, fallbackTeamMembers, fallbackTestimonials } from "@/lib/fallback-data";
 import { attachBlogPostMedia, attachProjectMedia, attachServiceMedia, getFeaturedMedia } from "@/lib/media-library";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { BlogPost, JourneyTheme, Project, Service, SiteSettings, Testimonial, TitledItem } from "@/lib/types";
+import type { BlogPost, JourneyTheme, MediaAssetRecord, Project, Service, SiteSettings, TeamMember, Testimonial, TitledItem } from "@/lib/types";
 
 function asStringArray(value: unknown) {
   return Array.isArray(value)
@@ -67,6 +67,7 @@ function mapSiteSettings(row: Record<string, unknown>): SiteSettings {
   return {
     id: String(row.id ?? fallbackSiteSettings.id),
     businessName: String(row.business_name ?? fallbackSiteSettings.businessName),
+    logoUrl: String(row.logo_url ?? fallbackSiteSettings.logoUrl),
     businessTagline: String(
       row.business_tagline ?? fallbackSiteSettings.businessTagline,
     ),
@@ -165,6 +166,12 @@ function mapSiteSettings(row: Record<string, unknown>): SiteSettings {
       row.about_values,
       fallbackSiteSettings.aboutValues,
     ),
+    teamSectionTitle: String(
+      row.team_section_title ?? fallbackSiteSettings.teamSectionTitle,
+    ),
+    teamSectionSubtitle: String(
+      row.team_section_subtitle ?? fallbackSiteSettings.teamSectionSubtitle,
+    ),
     studioFilmTitle: String(
       row.studio_film_title ?? fallbackSiteSettings.studioFilmTitle,
     ),
@@ -239,6 +246,32 @@ function mapSiteSettings(row: Record<string, unknown>): SiteSettings {
       row.seo_keywords ?? fallbackSiteSettings.seoKeywords,
     ),
     ogImageUrl: String(row.og_image_url ?? fallbackSiteSettings.ogImageUrl),
+  };
+}
+
+function mapTeamMember(row: Record<string, unknown>): TeamMember {
+  return {
+    id: String(row.id),
+    name: String(row.name ?? ""),
+    role: String(row.role ?? "Team"),
+    phone: String(row.phone ?? ""),
+    email: String(row.email ?? ""),
+    photoUrl: String(row.photo_url ?? fallbackSiteSettings.logoUrl),
+    sortOrder: Number(row.sort_order ?? 0),
+  };
+}
+
+function mapMediaAssetRecord(row: Record<string, unknown>): MediaAssetRecord {
+  return {
+    id: String(row.id),
+    title: String(row.title ?? ""),
+    alt: String(row.alt ?? ""),
+    src: String(row.src ?? ""),
+    storagePath: String(row.storage_path ?? ""),
+    kind: row.kind === "video" ? "video" : "image",
+    category: String(row.category ?? "workshop"),
+    source: "database",
+    sortOrder: Number(row.sort_order ?? 0),
   };
 }
 
@@ -415,6 +448,47 @@ export async function getTestimonials() {
       (testimonial) => testimonial.id,
     ),
   );
+}
+
+export async function getTeamMembers() {
+  const supabase = createSupabasePublicClient();
+
+  if (!supabase) {
+    return sortByOrder(fallbackTeamMembers);
+  }
+
+  const { data } = await supabase
+    .from("team_members")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (!data?.length) {
+    return sortByOrder(fallbackTeamMembers);
+  }
+
+  return sortByOrder(
+    mergeCollections(
+      fallbackTeamMembers,
+      data.map(mapTeamMember),
+      (member) => member.id,
+    ),
+  );
+}
+
+export async function getMediaAssetRecords() {
+  const supabase = createSupabasePublicClient();
+
+  if (!supabase) {
+    return [] as MediaAssetRecord[];
+  }
+
+  const { data } = await supabase
+    .from("media_assets")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  return (data ?? []).map(mapMediaAssetRecord).filter((asset) => asset.src);
 }
 
 export async function getBlogPosts() {

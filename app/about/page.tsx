@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { buildMetadata } from "@/lib/seo";
-import { getProjects, getServices, getSiteSettings } from "@/lib/site-data";
+import { getProjects, getServices, getSiteSettings, getTeamMembers } from "@/lib/site-data";
 
 export async function generateMetadata() {
   const siteSettings = await getSiteSettings();
@@ -16,10 +16,11 @@ export async function generateMetadata() {
 }
 
 export default async function AboutPage() {
-  const [siteSettings, services, projects] = await Promise.all([
+  const [siteSettings, services, projects, teamMembers] = await Promise.all([
     getSiteSettings(),
     getServices(),
     getProjects(),
+    getTeamMembers(),
   ]);
 
   return (
@@ -118,6 +119,30 @@ export default async function AboutPage() {
               <span className="info-card__eyebrow">{service.category}</span>
               <h3>{service.title}</h3>
               <p>{service.shortDescription}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="content-slab content-slab--team">
+        <div className="section-intro section-intro--split">
+          <div>
+            <span className="section-label">Our Team</span>
+            <h2 className="section-title">{siteSettings.teamSectionTitle}</h2>
+          </div>
+          <p className="section-subtitle">{siteSettings.teamSectionSubtitle}</p>
+        </div>
+
+        <div className="team-grid">
+          {teamMembers.map((member) => (
+            <article className="team-card" key={member.id}>
+              <div className="team-card__badge">{member.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</div>
+              <h3>{member.name}</h3>
+              <p className="team-card__role">{member.role}</p>
+              <div className="team-card__meta">
+                <a href={`tel:${member.phone.replace(/\s+/g, "")}`}>{member.phone}</a>
+                <a href={`mailto:${member.email}`}>{member.email}</a>
+              </div>
             </article>
           ))}
         </div>

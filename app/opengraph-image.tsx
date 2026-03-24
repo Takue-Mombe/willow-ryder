@@ -44,7 +44,30 @@ export default function OpenGraphImage() {
         >
           <div
             style={{
-              color: "#8f5f39",
+              alignItems: "center",
+              display: "flex",
+              gap: 18,
+            }}
+          >
+            <div
+              style={{
+                alignItems: "center",
+                background: "linear-gradient(135deg, #2c1a0e 0%, #8f5f39 100%)",
+                borderRadius: 24,
+                color: "#f8f0e6",
+                display: "flex",
+                fontFamily: "Georgia",
+                fontSize: 36,
+                height: 88,
+                justifyContent: "center",
+                width: 88,
+              }}
+            >
+              WM
+            </div>
+            <div
+              style={{
+                color: "#8f5f39",
               display: "flex",
               fontSize: 28,
               letterSpacing: "0.18em",
@@ -52,6 +75,7 @@ export default function OpenGraphImage() {
             }}
           >
             Victoria Falls · Zimbabwe
+          </div>
           </div>
           <div
             style={{

@@ -60,7 +60,7 @@ export function buildLocalBusinessSchema(input: {
     name: input.name,
     description: input.description,
     url: input.websiteUrl,
-    logo: `${getSiteUrl()}/favicon.ico`,
+    logo: `${getSiteUrl()}${input.image}`,
     image: `${getSiteUrl()}${input.image}`,
     telephone: input.phone,
     email: input.email,

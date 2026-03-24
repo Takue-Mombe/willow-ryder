@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type SiteHeaderProps = {
   brandName: string;
+  logoUrl: string;
 };
 
 const navLinks = [
@@ -17,7 +19,7 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader({ brandName }: SiteHeaderProps) {
+export function SiteHeader({ brandName, logoUrl }: SiteHeaderProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -35,8 +37,13 @@ export function SiteHeader({ brandName }: SiteHeaderProps) {
     <header className={`site-header${scrolled ? " site-header--scrolled" : ""}`}>
       <div className="shell site-header__inner">
         <Link className="site-header__brand" href="/">
-          {brandName.split(" ").slice(0, 1).join(" ")}
-          <span>{brandName.split(" ").slice(1).join(" ")}</span>
+          <span className="site-header__brand-mark">
+            <Image alt={`${brandName} logo`} fill sizes="48px" src={logoUrl} />
+          </span>
+          <span className="site-header__brand-text">
+            {brandName.split(" ").slice(0, 1).join(" ")}
+            <span>{brandName.split(" ").slice(1).join(" ")}</span>
+          </span>
         </Link>
 
         <nav className="site-header__nav" aria-label="Primary navigation">
