@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { checkAdminAccess } from "@/lib/admin-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function text(value: FormDataEntryValue | null) {
@@ -55,13 +56,9 @@ async function requireAdminClient() {
     redirect("/login");
   }
 
-  const { data: adminUser } = await supabase
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const isAdmin = await checkAdminAccess(supabase, user);
 
-  if (!adminUser) {
+  if (!isAdmin) {
     throw new Error("You are signed in, but this account is not an admin user.");
   }
 

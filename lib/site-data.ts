@@ -1,3 +1,4 @@
+import { checkAdminAccess } from "@/lib/admin-access";
 import { fallbackBlogPosts, fallbackJourneys, fallbackProjects, fallbackServices, fallbackSiteSettings, fallbackTestimonials } from "@/lib/fallback-data";
 import { attachBlogPostMedia, attachProjectMedia, attachServiceMedia, getFeaturedMedia } from "@/lib/media-library";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
@@ -475,16 +476,10 @@ export async function getAdminContext() {
     };
   }
 
-  const { data: adminRecord } = await supabase
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
   return {
     configured: true,
     isAuthenticated: true,
-    isAdmin: Boolean(adminRecord),
+    isAdmin: await checkAdminAccess(supabase, user),
     userId: user.id,
     email: user.email ?? null,
   };
