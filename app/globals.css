@@ -2086,9 +2086,18 @@ h6 {
   line-height: 1.5;
 }
 
+.admin-media-picker {
+  display: grid;
+  gap: 0.6rem;
+}
+
 .admin-file-input input {
   background: rgba(254, 252, 249, 0.84);
   border: 1px dashed rgba(155, 110, 70, 0.45);
+}
+
+.admin-file-input--picker {
+  gap: 0.35rem;
 }
 
 .admin-checkbox {

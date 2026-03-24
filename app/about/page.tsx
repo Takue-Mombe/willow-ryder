@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { normalizePhoneValue, toPhoneHref } from "@/lib/contact";
 import { buildMetadata } from "@/lib/seo";
 import { getProjects, getServices, getSiteSettings, getTeamMembers } from "@/lib/site-data";
 
@@ -140,7 +141,7 @@ export default async function AboutPage() {
               <h3>{member.name}</h3>
               <p className="team-card__role">{member.role}</p>
               <div className="team-card__meta">
-                <a href={`tel:${member.phone.replace(/\s+/g, "")}`}>{member.phone}</a>
+                <a href={`tel:${toPhoneHref(member.phone)}`}>{normalizePhoneValue(member.phone)}</a>
                 <a href={`mailto:${member.email}`}>{member.email}</a>
               </div>
             </article>

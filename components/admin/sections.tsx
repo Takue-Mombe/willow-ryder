@@ -98,11 +98,13 @@ export function AdminShell({ children, email, status, title, description }: Admi
 }
 
 function MediaPickerField({
+  accept = "image/*,video/*",
   assets,
   label,
   name,
   value,
 }: {
+  accept?: string;
   assets: StudioAsset[];
   label: string;
   name: string;
@@ -111,16 +113,24 @@ function MediaPickerField({
   const listId = `${name}-options`;
 
   return (
-    <label>
-      {label}
-      <input defaultValue={value} list={listId} name={name} type="text" />
-      <datalist id={listId}>
-        {assets.map((asset) => (
-          <option key={`${name}-${asset.id}`} value={asset.src} label={`${asset.title} (${asset.source ?? "public"})`} />
-        ))}
-      </datalist>
-      <small className="admin-field-help">Choose an existing asset or paste any valid image/video URL.</small>
-    </label>
+    <div className="admin-media-picker">
+      <label>
+        {label}
+        <input defaultValue={value} list={listId} name={name} type="text" />
+        <datalist id={listId}>
+          {assets.map((asset) => (
+            <option key={`${name}-${asset.id}`} value={asset.src} label={`${asset.title} (${asset.source ?? "public"})`} />
+          ))}
+        </datalist>
+      </label>
+      <label className="admin-file-input admin-file-input--picker">
+        Browse for more
+        <input accept={accept} capture="environment" name={`${name}_file`} type="file" />
+      </label>
+      <small className="admin-field-help">
+        Pick an existing asset, paste a URL, or tap browse to choose a file from your phone and upload it straight to the Supabase bucket when you save.
+      </small>
+    </div>
   );
 }
 
@@ -179,14 +189,14 @@ export function SiteSettingsSection({
         <p>Business identity, homepage hero, About copy, contact details, SEO, and brand logo.</p>
       </div>
 
-      <form action={saveSiteSettingsAction} className="admin-form admin-form--wide">
+      <form action={saveSiteSettingsAction} className="admin-form admin-form--wide" encType="multipart/form-data">
         <input name="id" type="hidden" value={siteSettings.id} />
         <div className="admin-grid admin-grid--two">
           <label>
             Business name
             <input defaultValue={siteSettings.businessName} name="business_name" type="text" />
           </label>
-          <MediaPickerField assets={archiveAssets} label="Logo URL" name="logo_url" value={siteSettings.logoUrl} />
+          <MediaPickerField accept="image/*" assets={archiveAssets} label="Logo URL" name="logo_url" value={siteSettings.logoUrl} />
           <label>
             Website URL
             <input defaultValue={siteSettings.websiteUrl} name="website_url" type="text" />
@@ -304,7 +314,7 @@ export function SiteSettingsSection({
             About section title
             <input defaultValue={siteSettings.aboutSectionTitle} name="about_section_title" type="text" />
           </label>
-          <MediaPickerField assets={archiveAssets} label="About media" name="about_media_url" value={siteSettings.aboutMediaUrl} />
+          <MediaPickerField accept="image/*" assets={archiveAssets} label="About media" name="about_media_url" value={siteSettings.aboutMediaUrl} />
           <label>
             Team section title
             <input defaultValue={siteSettings.teamSectionTitle} name="team_section_title" type="text" />
@@ -358,7 +368,7 @@ export function SiteSettingsSection({
             Contact section title
             <input defaultValue={siteSettings.contactSectionTitle} name="contact_section_title" type="text" />
           </label>
-          <MediaPickerField assets={archiveAssets} label="Open Graph image" name="og_image_url" value={siteSettings.ogImageUrl} />
+          <MediaPickerField accept="image/*" assets={archiveAssets} label="Open Graph image" name="og_image_url" value={siteSettings.ogImageUrl} />
         </div>
 
         <label>
@@ -477,7 +487,7 @@ function TeamMemberForm({
 }) {
   return (
     <div className="admin-item__body">
-      <form action={saveTeamMemberAction} className="admin-form">
+      <form action={saveTeamMemberAction} className="admin-form" encType="multipart/form-data">
         <input name="id" type="hidden" value={member?.id ?? ""} />
         <div className="admin-grid admin-grid--two">
           <label>
@@ -496,7 +506,7 @@ function TeamMemberForm({
             Email
             <input defaultValue={member?.email ?? ""} name="email" type="email" />
           </label>
-          <MediaPickerField assets={archiveAssets} label="Photo" name="photo_url" value={member?.photoUrl ?? ""} />
+          <MediaPickerField accept="image/*" assets={archiveAssets} label="Photo" name="photo_url" value={member?.photoUrl ?? ""} />
           <label>
             Sort order
             <input defaultValue={member?.sortOrder ?? 0} name="sort_order" type="number" />
@@ -633,7 +643,7 @@ export function ServicesSection({ archiveAssets, services }: SharedAdminData & {
 function ServiceForm({ archiveAssets, service }: { archiveAssets: StudioAsset[]; service: Service | null }) {
   return (
     <div className="admin-item__body">
-      <form action={saveServiceAction} className="admin-form">
+      <form action={saveServiceAction} className="admin-form" encType="multipart/form-data">
         <input name="id" type="hidden" value={service?.id ?? ""} />
         <div className="admin-grid admin-grid--two">
           <label>
@@ -652,7 +662,7 @@ function ServiceForm({ archiveAssets, service }: { archiveAssets: StudioAsset[];
             Category
             <input defaultValue={service?.category ?? ""} name="category" type="text" />
           </label>
-          <MediaPickerField assets={archiveAssets} label="Image" name="image_url" value={service?.imageUrl ?? ""} />
+          <MediaPickerField accept="image/*" assets={archiveAssets} label="Image" name="image_url" value={service?.imageUrl ?? ""} />
           <label>
             Sort order
             <input defaultValue={service?.sortOrder ?? 0} name="sort_order" type="number" />
@@ -732,7 +742,7 @@ export function ProjectsSection({ archiveAssets, projects }: SharedAdminData & {
 function ProjectForm({ archiveAssets, project }: { archiveAssets: StudioAsset[]; project: Project | null }) {
   return (
     <div className="admin-item__body">
-      <form action={saveProjectAction} className="admin-form">
+      <form action={saveProjectAction} className="admin-form" encType="multipart/form-data">
         <input name="id" type="hidden" value={project?.id ?? ""} />
         <div className="admin-grid admin-grid--two">
           <label>
@@ -755,7 +765,7 @@ function ProjectForm({ archiveAssets, project }: { archiveAssets: StudioAsset[];
             Year
             <input defaultValue={project?.year ?? ""} name="year" type="text" />
           </label>
-          <MediaPickerField assets={archiveAssets} label="Image" name="image_url" value={project?.imageUrl ?? ""} />
+          <MediaPickerField accept="image/*" assets={archiveAssets} label="Image" name="image_url" value={project?.imageUrl ?? ""} />
           <label>
             Sort order
             <input defaultValue={project?.sortOrder ?? 0} name="sort_order" type="number" />
@@ -851,7 +861,7 @@ export function BlogSection({ archiveAssets, blogPosts }: SharedAdminData & { bl
 function PostForm({ archiveAssets, post }: { archiveAssets: StudioAsset[]; post: BlogPost | null }) {
   return (
     <div className="admin-item__body">
-      <form action={savePostAction} className="admin-form">
+      <form action={savePostAction} className="admin-form" encType="multipart/form-data">
         <input name="id" type="hidden" value={post?.id ?? ""} />
         <div className="admin-grid admin-grid--two">
           <label>
@@ -878,7 +888,7 @@ function PostForm({ archiveAssets, post }: { archiveAssets: StudioAsset[]; post:
             Cover accent
             <input defaultValue={post?.coverAccent ?? "#C4956A"} name="cover_accent" type="text" />
           </label>
-          <MediaPickerField assets={archiveAssets} label="Cover image" name="cover_image_url" value={post?.coverImageUrl ?? ""} />
+          <MediaPickerField accept="image/*" assets={archiveAssets} label="Cover image" name="cover_image_url" value={post?.coverImageUrl ?? ""} />
           <label className="admin-checkbox">
             <input defaultChecked={post?.featured ?? false} name="featured" type="checkbox" />
             Featured article

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { checkAdminAccess } from "@/lib/admin-access";
+import { normalizePhoneValue } from "@/lib/contact";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function text(value: FormDataEntryValue | null) {
@@ -57,6 +58,82 @@ function getStorageFileName(fileName: string) {
   return `${slugify(base) || "asset"}-${Date.now()}${extension || ".jpg"}`;
 }
 
+async function uploadAndPersistMediaAsset({
+  alt,
+  supabase,
+  category,
+  file,
+  sortOrder,
+  title,
+}: {
+  alt?: string;
+  supabase: Awaited<ReturnType<typeof requireAdminClient>>;
+  category: string;
+  file: File;
+  sortOrder?: number;
+  title: string;
+}) {
+  const kind = getAssetKind(file.name);
+  const storageFileName = getStorageFileName(file.name);
+  const storagePath = `${slugify(category) || "workshop"}/${storageFileName}`;
+  const { error: uploadError } = await supabase.storage
+    .from("media-assets")
+    .upload(storagePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || undefined,
+    });
+
+  if (uploadError) {
+    throw new Error(uploadError.message);
+  }
+
+  const { data: publicUrlData } = supabase.storage.from("media-assets").getPublicUrl(storagePath);
+
+  await supabase.from("media_assets").insert({
+    title: title || file.name,
+    alt: alt || title || file.name,
+    src: publicUrlData.publicUrl,
+    storage_path: storagePath,
+    kind,
+    category,
+    source: "database",
+    sort_order: sortOrder ?? 0,
+  });
+
+  return publicUrlData.publicUrl;
+}
+
+async function resolveMediaField({
+  supabase,
+  formData,
+  valueField,
+  fileField,
+  category,
+  title,
+}: {
+  supabase: Awaited<ReturnType<typeof requireAdminClient>>;
+  formData: FormData;
+  valueField: string;
+  fileField: string;
+  category: string;
+  title: string;
+}) {
+  const file = formData.get(fileField);
+
+  if (file instanceof File && file.size > 0) {
+    return uploadAndPersistMediaAsset({
+      supabase,
+      category,
+      file,
+      sortOrder: 0,
+      title,
+    });
+  }
+
+  return text(formData.get(valueField));
+}
+
 async function requireAdminClient() {
   const supabase = await createSupabaseServerClient();
 
@@ -90,15 +167,59 @@ function revalidatePublicSite(paths: string[]) {
 export async function saveSiteSettingsAction(formData: FormData) {
   const supabase = await requireAdminClient();
   const id = text(formData.get("id"));
+  const businessName = text(formData.get("business_name"));
+
+  const [logoUrl, heroMediaUrl, aboutMediaUrl, storyMediaUrl, ogImageUrl] = await Promise.all([
+    resolveMediaField({
+      supabase,
+      formData,
+      valueField: "logo_url",
+      fileField: "logo_url_file",
+      category: "branding",
+      title: `${businessName} logo`,
+    }),
+    resolveMediaField({
+      supabase,
+      formData,
+      valueField: "hero_media_url",
+      fileField: "hero_media_url_file",
+      category: "hero",
+      title: `${businessName} hero media`,
+    }),
+    resolveMediaField({
+      supabase,
+      formData,
+      valueField: "about_media_url",
+      fileField: "about_media_url_file",
+      category: "about",
+      title: `${businessName} about media`,
+    }),
+    resolveMediaField({
+      supabase,
+      formData,
+      valueField: "story_media_url",
+      fileField: "story_media_url_file",
+      category: "story",
+      title: `${businessName} story media`,
+    }),
+    resolveMediaField({
+      supabase,
+      formData,
+      valueField: "og_image_url",
+      fileField: "og_image_url_file",
+      category: "seo",
+      title: `${businessName} open graph image`,
+    }),
+  ]);
 
   const payload = {
     id: id || undefined,
-    business_name: text(formData.get("business_name")),
-    logo_url: text(formData.get("logo_url")) || "/logo/logo.jpeg",
+    business_name: businessName,
+    logo_url: logoUrl || "/logo/logo.jpeg",
     business_tagline: text(formData.get("business_tagline")),
     business_description: text(formData.get("business_description")),
-    phone: text(formData.get("phone")),
-    whatsapp: text(formData.get("whatsapp")),
+    phone: normalizePhoneValue(text(formData.get("phone"))),
+    whatsapp: normalizePhoneValue(text(formData.get("whatsapp"))),
     email: text(formData.get("email")),
     street_address: text(formData.get("street_address")),
     address_locality: text(formData.get("address_locality")),
@@ -113,7 +234,7 @@ export async function saveSiteSettingsAction(formData: FormData) {
     hero_description: text(formData.get("hero_description")),
     hero_quote: text(formData.get("hero_quote")),
     hero_location_text: text(formData.get("hero_location_text")),
-    hero_media_url: text(formData.get("hero_media_url")),
+    hero_media_url: heroMediaUrl,
     primary_cta_label: text(formData.get("primary_cta_label")),
     primary_cta_href: text(formData.get("primary_cta_href")),
     secondary_cta_label: text(formData.get("secondary_cta_label")),
@@ -130,13 +251,13 @@ export async function saveSiteSettingsAction(formData: FormData) {
     portfolio_section_cta_label: text(formData.get("portfolio_section_cta_label")),
     portfolio_section_cta_href: text(formData.get("portfolio_section_cta_href")),
     about_section_title: text(formData.get("about_section_title")),
-    about_media_url: text(formData.get("about_media_url")),
+    about_media_url: aboutMediaUrl,
     about_values: splitTitledLines(formData.get("about_values")),
     team_section_title: text(formData.get("team_section_title")),
     team_section_subtitle: text(formData.get("team_section_subtitle")),
     studio_film_title: text(formData.get("studio_film_title")),
     studio_film_description: text(formData.get("studio_film_description")),
-    story_media_url: text(formData.get("story_media_url")),
+    story_media_url: storyMediaUrl,
     process_section_title: text(formData.get("process_section_title")),
     process_section_subtitle: text(formData.get("process_section_subtitle")),
     process_steps: splitTitledLines(formData.get("process_steps")),
@@ -158,7 +279,7 @@ export async function saveSiteSettingsAction(formData: FormData) {
     seo_default_title: text(formData.get("seo_default_title")),
     seo_default_description: text(formData.get("seo_default_description")),
     seo_keywords: splitLines(formData.get("seo_keywords")),
-    og_image_url: text(formData.get("og_image_url")),
+    og_image_url: ogImageUrl,
   };
 
   await supabase.from("site_settings").upsert(payload);
@@ -170,6 +291,14 @@ export async function saveServiceAction(formData: FormData) {
   const supabase = await requireAdminClient();
   const title = text(formData.get("title"));
   const slug = text(formData.get("slug")) || slugify(title);
+  const imageUrl = await resolveMediaField({
+    supabase,
+    formData,
+    valueField: "image_url",
+    fileField: "image_url_file",
+    category: "services",
+    title: `${title} service image`,
+  });
 
   const payload = {
     id: text(formData.get("id")) || undefined,
@@ -179,7 +308,7 @@ export async function saveServiceAction(formData: FormData) {
     full_description: text(formData.get("full_description")),
     icon: text(formData.get("icon")) || "✦",
     category: text(formData.get("category")),
-    image_url: text(formData.get("image_url")),
+    image_url: imageUrl,
     bullets: splitLines(formData.get("bullets")),
     featured: formData.get("featured") === "on",
     sort_order: Number(text(formData.get("sort_order")) || "0"),
@@ -205,6 +334,14 @@ export async function saveProjectAction(formData: FormData) {
   const supabase = await requireAdminClient();
   const title = text(formData.get("title"));
   const slug = text(formData.get("slug")) || slugify(title);
+  const imageUrl = await resolveMediaField({
+    supabase,
+    formData,
+    valueField: "image_url",
+    fileField: "image_url_file",
+    category: "projects",
+    title: `${title} project image`,
+  });
 
   const payload = {
     id: text(formData.get("id")) || undefined,
@@ -219,7 +356,7 @@ export async function saveProjectAction(formData: FormData) {
     sort_order: Number(text(formData.get("sort_order")) || "0"),
     challenge: text(formData.get("challenge")),
     solution: text(formData.get("solution")),
-    image_url: text(formData.get("image_url")),
+    image_url: imageUrl,
     palette: splitLines(formData.get("palette")),
     materials: splitLines(formData.get("materials")),
     metrics: splitLines(formData.get("metrics")),
@@ -245,6 +382,14 @@ export async function savePostAction(formData: FormData) {
   const supabase = await requireAdminClient();
   const title = text(formData.get("title"));
   const slug = text(formData.get("slug")) || slugify(title);
+  const coverImageUrl = await resolveMediaField({
+    supabase,
+    formData,
+    valueField: "cover_image_url",
+    fileField: "cover_image_url_file",
+    category: "blog",
+    title: `${title} cover image`,
+  });
 
   const payload = {
     id: text(formData.get("id")) || undefined,
@@ -257,7 +402,7 @@ export async function savePostAction(formData: FormData) {
     featured: formData.get("featured") === "on",
     published_at: text(formData.get("published_at")),
     cover_accent: text(formData.get("cover_accent")),
-    cover_image_url: text(formData.get("cover_image_url")),
+    cover_image_url: coverImageUrl,
     seo_title: text(formData.get("seo_title")),
     seo_description: text(formData.get("seo_description")),
   };
@@ -306,14 +451,23 @@ export async function deleteTestimonialAction(formData: FormData) {
 
 export async function saveTeamMemberAction(formData: FormData) {
   const supabase = await requireAdminClient();
+  const name = text(formData.get("name"));
+  const photoUrl = await resolveMediaField({
+    supabase,
+    formData,
+    valueField: "photo_url",
+    fileField: "photo_url_file",
+    category: "team",
+    title: `${name} profile photo`,
+  });
 
   const payload = {
     id: text(formData.get("id")) || undefined,
-    name: text(formData.get("name")),
+    name,
     role: text(formData.get("role")),
-    phone: text(formData.get("phone")),
+    phone: normalizePhoneValue(text(formData.get("phone"))),
     email: text(formData.get("email")),
-    photo_url: text(formData.get("photo_url")),
+    photo_url: photoUrl,
     sort_order: Number(text(formData.get("sort_order")) || "0"),
   };
 
@@ -334,7 +488,7 @@ export async function deleteTeamMemberAction(formData: FormData) {
 export async function uploadMediaAssetAction(formData: FormData) {
   const supabase = await requireAdminClient();
   const title = text(formData.get("title"));
-  const alt = text(formData.get("alt")) || title;
+  const alt = text(formData.get("alt"));
   const category = text(formData.get("category")) || "workshop";
   const sortOrder = Number(text(formData.get("sort_order")) || "0");
   const file = formData.get("file");
@@ -343,32 +497,13 @@ export async function uploadMediaAssetAction(formData: FormData) {
     throw new Error("Please choose a file to upload.");
   }
 
-  const kind = getAssetKind(file.name);
-  const storageFileName = getStorageFileName(file.name);
-  const storagePath = `${category}/${storageFileName}`;
-  const { error: uploadError } = await supabase.storage
-    .from("media-assets")
-    .upload(storagePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type || undefined,
-    });
-
-  if (uploadError) {
-    throw new Error(uploadError.message);
-  }
-
-  const { data: publicUrlData } = supabase.storage.from("media-assets").getPublicUrl(storagePath);
-
-  await supabase.from("media_assets").insert({
-    title: title || file.name,
+  await uploadAndPersistMediaAsset({
     alt,
-    src: publicUrlData.publicUrl,
-    storage_path: storagePath,
-    kind,
+    supabase,
     category,
-    source: "database",
-    sort_order: sortOrder,
+    file,
+    sortOrder,
+    title: title || alt || file.name,
   });
 
   revalidatePublicSite([]);

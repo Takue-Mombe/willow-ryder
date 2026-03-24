@@ -1,4 +1,5 @@
 import { ContactForm } from "@/components/site/contact-form";
+import { normalizePhoneValue, toPhoneHref } from "@/lib/contact";
 import { buildMetadata } from "@/lib/seo";
 import { getServices, getSiteSettings, getTeamMembers } from "@/lib/site-data";
 
@@ -43,7 +44,7 @@ export default async function ContactPage() {
             <div>
               <h3>Phone / WhatsApp</h3>
               <p>
-                <a href={`tel:${siteSettings.phone.replace(/\s+/g, "")}`}>{siteSettings.phone}</a>
+                <a href={`tel:${toPhoneHref(siteSettings.phone)}`}>{normalizePhoneValue(siteSettings.phone)}</a>
               </p>
             </div>
             <div>
@@ -72,7 +73,7 @@ export default async function ContactPage() {
               <article className="team-contact-card" key={member.id}>
                 <strong>{member.name}</strong>
                 <span>{member.role}</span>
-                <a href={`tel:${member.phone.replace(/\s+/g, "")}`}>{member.phone}</a>
+                <a href={`tel:${toPhoneHref(member.phone)}`}>{normalizePhoneValue(member.phone)}</a>
                 <a href={`mailto:${member.email}`}>{member.email}</a>
               </article>
             ))}

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ContactForm } from "@/components/site/contact-form";
 import { MediaFrame, toImageAsset } from "@/components/site/media-frame";
+import { normalizePhoneValue, toPhoneHref } from "@/lib/contact";
 import type { BlogPost, FeaturedMedia, Project, Service, SiteSettings, Testimonial } from "@/lib/types";
 
 type HomePageProps = {
@@ -355,8 +356,8 @@ export function HomePage({
                 <div>
                   <h3>Phone / WhatsApp</h3>
                   <p>
-                    <a href={`tel:${siteSettings.phone.replace(/\s+/g, "")}`}>
-                      {siteSettings.phone}
+                    <a href={`tel:${toPhoneHref(siteSettings.phone)}`}>
+                      {normalizePhoneValue(siteSettings.phone)}
                     </a>
                   </p>
                 </div>

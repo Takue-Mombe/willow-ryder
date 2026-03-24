@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { normalizePhoneValue, toPhoneHref } from "@/lib/contact";
 import type { SiteSettings } from "@/lib/types";
 
 type SiteFooterProps = {
@@ -24,7 +25,7 @@ export function SiteFooter({ siteSettings }: SiteFooterProps) {
           </Link>
           <p>{siteSettings.businessDescription}</p>
           <div className="site-footer__contact-lines">
-            <a href={`tel:${siteSettings.phone.replace(/\s+/g, "")}`}>{siteSettings.phone}</a>
+            <a href={`tel:${toPhoneHref(siteSettings.phone)}`}>{normalizePhoneValue(siteSettings.phone)}</a>
             <a href={`mailto:${siteSettings.email}`}>{siteSettings.email}</a>
             <span>
               {siteSettings.addressLocality}, {siteSettings.addressRegion}, Zimbabwe

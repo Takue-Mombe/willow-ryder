@@ -213,6 +213,13 @@ alter table public.site_settings add column if not exists contact_section_title 
 alter table public.services add column if not exists image_url text not null default '';
 alter table public.blog_posts add column if not exists cover_image_url text not null default '';
 
+update public.site_settings
+set
+  phone = '+263 78 554 9266',
+  whatsapp = '+263 78 554 9266'
+where phone in ('+263 78 000 0000', '+263 78 000 0000 ', '0780000000')
+   or whatsapp in ('+263 78 000 0000', '+263 78 000 0000 ', '0780000000');
+
 create table if not exists public.inquiries (
   id uuid primary key default gen_random_uuid(),
   first_name text not null,
