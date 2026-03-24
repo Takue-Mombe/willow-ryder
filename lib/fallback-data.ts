@@ -16,8 +16,8 @@ export const fallbackSiteSettings: SiteSettings = {
     "Bespoke carpentry, interior design, and luxury flooring in Victoria Falls, Zimbabwe.",
   businessDescription:
     "Winmore Creations is a Victoria Falls studio shaping spaces through bespoke carpentry, custom furniture, interior design, epoxy flooring, and wooden flooring for homes, lodges, offices, and hospitality brands across Zimbabwe.",
-  phone: "+263 78 000 0000",
-  whatsapp: "+263 78 000 0000",
+  phone: "+263 78 554 9266 ",
+  whatsapp: "+263 78 554 9266 ",
   email: "hello@winmorecreations.co.zw",
   streetAddress: "Victoria Falls",
   addressLocality: "Victoria Falls",
